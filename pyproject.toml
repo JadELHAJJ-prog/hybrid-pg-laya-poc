@@ -44,6 +44,7 @@ markers = [
 [tool.ruff]
 line-length = 120
 target-version = "py311"
+extend-exclude = ["*.md"]  # never reformat the plan / docs
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP"]
