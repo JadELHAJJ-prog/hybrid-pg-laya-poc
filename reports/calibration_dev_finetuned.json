@@ -1,0 +1,120 @@
+{
+ "split": "dev",
+ "candidates": {
+  "finetuned": {
+   "subfolder": "models/laya_refunddesk",
+   "n_decisions": 264,
+   "llm_acc_teacher_forced": 0.9886363636363636,
+   "raw_T1": {
+    "acc": 0.946969696969697,
+    "ece_answer_conf": 0.0759335229828921,
+    "mean_answer_conf": 0.8798822735475462,
+    "none_won_rate": 0.0
+   },
+   "shipped_T": {
+    "acc": 0.946969696969697,
+    "ece_answer_conf": 0.0759335229828921,
+    "mean_answer_conf": 0.8798822735475462,
+    "none_won_rate": 0.0,
+    "T": {
+     "3": 1.0,
+     "5": 1.0,
+     "4": 1.0
+    }
+   },
+   "fitted_T_cv5": {
+    "acc": 0.946969696969697,
+    "ece_answer_conf": 0.010456982870955162,
+    "mean_answer_conf": 0.9551097996263975,
+    "none_won_rate": 0.0,
+    "T_all_dev": {
+     "3": 0.6658046755369312,
+     "5": 0.7477682284369555,
+     "4": 0.5
+    }
+   },
+   "acc_by_node": {
+    "guard": {
+     "laya": 0.9714285714285714,
+     "llm": 0.9714285714285714,
+     "n": 70
+    },
+    "classify": {
+     "laya": 0.9384615384615385,
+     "llm": 0.9846153846153847,
+     "n": 65
+    },
+    "lookup_order": {
+     "laya": 1.0,
+     "llm": 1.0,
+     "n": 35
+    },
+    "policy_check": {
+     "laya": 1.0,
+     "llm": 1.0,
+     "n": 30
+    },
+    "lookup_order_delivery": {
+     "laya": 1.0,
+     "llm": 1.0,
+     "n": 16
+    },
+    "final_review": {
+     "laya": 0.8333333333333334,
+     "llm": 1.0,
+     "n": 48
+    }
+   },
+   "gates": {
+    "answer_confidence": {
+     "chosen": {
+      "tau": 0.83,
+      "hybrid_acc": 0.9696969696969697,
+      "coverage": 0.946969696969697,
+      "fallback_rate": 0.05303030303030298,
+      "laya_acc_on_covered": 0.972
+     }
+    },
+    "confidence": {
+     "chosen": {
+      "tau": 0.53,
+      "hybrid_acc": 0.9696969696969697,
+      "coverage": 0.946969696969697,
+      "fallback_rate": 0.05303030303030298,
+      "laya_acc_on_covered": 0.972
+     }
+    }
+   }
+  }
+ },
+ "guard_dev": {
+  "preset": {
+   "recall_adv": 1.0,
+   "fpr_clean": 0.16923076923076924
+  },
+  "choice_laya": {
+   "recall_adv": 0.6,
+   "fpr_clean": 0.0
+  },
+  "llm": {
+   "recall_adv": 1.0,
+   "fpr_clean": 0.03076923076923077
+  }
+ },
+ "decision": {
+  "checkpoint": "finetuned",
+  "subfolder": "models/laya_refunddesk",
+  "gate": "answer_confidence",
+  "tau": 0.83,
+  "dev_hybrid_acc_sim": 0.9696969696969697,
+  "dev_fallback_rate_sim": 0.05303030303030298,
+  "dev_llm_acc": 0.9886363636363636,
+  "post_temperatures": {
+   "3": 0.6658046755369312,
+   "5": 0.7477682284369555,
+   "4": 0.5
+  },
+  "within_2pts": true,
+  "guard_mode": "choice"
+ }
+}

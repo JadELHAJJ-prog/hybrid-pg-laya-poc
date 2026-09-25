@@ -30,11 +30,12 @@ def _stats(ev: dict[str, np.ndarray]) -> dict[str, float]:
     }
 
 
-def calibration_report(cfg: dict, root: Path, split: str = "dev", write_config: bool = True) -> dict:
+def calibration_report(cfg: dict, root: Path, split: str = "dev", write_config: bool = True,
+                       candidates: dict | None = None, tag: str = "") -> dict:  # fmt: skip
     calib = root / cfg["paths"]["runs"] / f"calib_{split}"
     out_dir = root / REPORTS
     out_dir.mkdir(exist_ok=True)
-    cands = cfg["laya"].get("candidates", {"typed": "typed-decisions", "english": ""})
+    cands = candidates or cfg["laya"].get("candidates", {"typed": "typed-decisions", "english": ""})
     summary: dict = {"split": split, "candidates": {}}
     taus = np.round(np.linspace(0.0, 1.0, 101), 2)
     fig_rel, axes_rel = plt.subplots(1, len(cands), figsize=(5 * len(cands), 4.2), squeeze=False)
@@ -84,9 +85,9 @@ def calibration_report(cfg: dict, root: Path, split: str = "dev", write_config: 
         ax.legend(fontsize=7)
         summary["candidates"][name] = s
     fig_rel.tight_layout()
-    fig_rel.savefig(out_dir / f"reliability_{split}.png", dpi=120)
+    fig_rel.savefig(out_dir / f"reliability_{split}{tag}.png", dpi=120)
     fig_tau.tight_layout()
-    fig_tau.savefig(out_dir / f"tau_sweep_{split}.png", dpi=120)
+    fig_tau.savefig(out_dir / f"tau_sweep_{split}{tag}.png", dpi=120)
     plt.close("all")
 
     # guard preset vs choice on dev
@@ -136,10 +137,12 @@ def calibration_report(cfg: dict, root: Path, split: str = "dev", write_config: 
     for c in slim["candidates"].values():
         for gname in c["gates"]:
             c["gates"][gname].pop("curve")
-    (out_dir / f"calibration_{split}.json").write_text(json.dumps(slim, indent=1))
+    (out_dir / f"calibration_{split}{tag}.json").write_text(json.dumps(slim, indent=1))
     print(json.dumps(slim, indent=1))
-    if write_config and split == "dev":
+    if write_config and split == "dev" and not tag:
         _write_config(root / "config.yaml", summary["decision"])
+    elif write_config and split == "dev":
+        _write_section(root / "config.yaml", tag.strip("_") + "_calibration", summary["decision"])
     return summary
 
 
@@ -165,6 +168,16 @@ def _write_config(path: Path, d: dict) -> None:
         else:
             s = re.sub(r"(?m)^(  bf16_weights: .*)$", rf"\1\n{gm}", s)
     path.write_text(s)
+
+
+def _write_section(path: Path, key: str, d: dict) -> None:
+    """Append/replace a top-level config block (used for E5's own dev calibration)."""
+    s = path.read_text()
+    s = re.sub(rf"(?ms)^{key}:\n(?:  .*\n)*", "", s)
+    temps = ", ".join(f"{k}: {v:.3f}" for k, v in sorted(d["post_temperatures"].items()))
+    block = (f"{key}:   # dev-only calibration for this checkpoint (Phase 7)\n  tau: {d['tau']}\n  gate: {d['gate']}\n"
+             f"  guard_mode: {d.get('guard_mode', 'choice')}\n  post_temperatures: {{{temps}}}\n")  # fmt: skip
+    path.write_text(s.rstrip("\n") + "\n\n" + block)
 
 
 # ----------------------------------------------------------------------------- Phase 6

@@ -48,6 +48,11 @@ def build(cfg: dict, router_name: str, device: str | None = None, finetuned: boo
     if router_name in ("laya", "hybrid"):
         from hpg.routers.laya_router import LayaRouter
 
+        if finetuned:  # E5: this checkpoint's own dev calibration (Phase 7)
+            fc = cfg["finetuned_calibration"]
+            cfg = {**cfg, "laya": {**cfg["laya"], "guard_mode": fc["guard_mode"],
+                                   "post_temperatures": fc["post_temperatures"]},
+                   "routing": {**cfg["routing"], "tau": fc["tau"], "gate": fc["gate"]}}  # fmt: skip
         router = LayaRouter.from_config(cfg, graph, device=device, finetuned=finetuned)
         if router_name == "hybrid":
             r = cfg["routing"]
@@ -191,6 +196,7 @@ def calibrate(
     stage: str = typer.Option("all", help="collect | score | analyze | all"),
     split: str = typer.Option("dev"),
     limit: int | None = typer.Option(None),
+    device: str | None = typer.Option(None, help="laya device override for scoring"),
 ) -> None:
     """Phase 5 (dev only): collect decisions, replay through Laya checkpoints, fit temperatures, choose tau."""
     if split == "test":
@@ -207,6 +213,11 @@ def calibrate(
         from hpg.eval.report import calibration_report
 
         calibration_report(cfg, ROOT, split)
+    if stage == "finetuned":  # Phase 7: replay dev snapshots through the fine-tuned checkpoint, own tau/temps
+        from hpg.eval.report import calibration_report
+
+        C.score_laya(cfg, ROOT, "finetuned", None, split, path=cfg["laya"]["finetuned"], device=device)
+        calibration_report(cfg, ROOT, split, candidates={"finetuned": cfg["laya"]["finetuned"]}, tag="_finetuned")
 
 
 if __name__ == "__main__":

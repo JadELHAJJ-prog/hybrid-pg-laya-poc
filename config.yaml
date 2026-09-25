@@ -33,3 +33,15 @@ routing:
   tau: 0.87   # chosen on dev in Phase 5 (reports/calibration_dev.json)
   gate: answer_confidence
   max_steps: 20
+
+finetuned_calibration:   # dev-only calibration for this checkpoint (Phase 7)
+  tau: 0.83
+  gate: answer_confidence
+  guard_mode: choice
+  post_temperatures: {3: 0.666, 4: 0.043, 5: 0.748}
+
+finetuned_calibration:   # dev-only calibration for this checkpoint (Phase 7)
+  tau: 0.83
+  gate: answer_confidence
+  guard_mode: choice
+  post_temperatures: {3: 0.666, 4: 0.500, 5: 0.748}

@@ -84,14 +84,15 @@ def collect(cfg: dict, root: Path, split: str = "dev", limit: int | None = None)
 
 # ----------------------------------------------------------------------------- 2. replay through Laya
 def score_laya(cfg: dict, root: Path, name: str, subfolder: str | None, split: str = "dev",
-               guard_preset: bool = True) -> Path:  # fmt: skip
+               guard_preset: bool = True, path: str | None = None, device: str | None = None) -> Path:  # fmt: skip
     from hpg.graph_loader import load_graph
     from hpg.routers.laya_router import LayaRouter, load_agent
 
     calib = root / cfg["paths"]["runs"] / f"calib_{split}"
     rows = [json.loads(x) for x in (calib / "decisions.jsonl").read_text().splitlines() if x]
     graph = load_graph(root / cfg["paths"]["graph"])
-    agent = load_agent(cfg["laya"]["repo"], subfolder, cfg["laya"]["device"], cfg["laya"].get("bf16_weights", True))
+    agent = load_agent(path or cfg["laya"]["repo"], None if path else subfolder, device or cfg["laya"]["device"],
+                       cfg["laya"].get("bf16_weights", True))  # fmt: skip
     shipped = dict(agent.temperature_by_options)
     for b in ("2", "3-5", "6-10", "11+"):  # neutralise choice temperatures -> raw softmax(logits)
         agent.temperature_by_options[f"choice:{b}"] = 1.0
@@ -164,7 +165,8 @@ def fit_T(ps: list[np.ndarray], gold: list[int]) -> float:
     grid = np.exp(np.linspace(np.log(0.05), np.log(5.0), 120))
     best = min(grid, key=nll)
     fine = np.linspace(best * 0.85, best * 1.15, 40)
-    return float(min(fine, key=nll))
+    # Clamp like laya's own loader ([0.5, 5]): with perfectly separable dev decisions NLL drives T -> 0.
+    return float(np.clip(min(fine, key=nll), 0.5, 5.0))
 
 
 def ece(conf: np.ndarray, correct: np.ndarray, n_bins: int = 10) -> float:
