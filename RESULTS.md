@@ -80,3 +80,27 @@ on generated text, so no static gold label exists. The hard (24%) and adversaria
 **Open issues:** for two-issue tickets, gold follows the issue the customer explicitly asks to have resolved;
 these are tagged `two_issues` so they can be reported separately.
 
+## Phase 4 – Engine and routers (DONE 2026-09-25)
+**Built:** `engine.py` (graph walker: tool / llm / route / laya_check executors; deterministic routing for single-edge
+nodes; max_steps 20; bounded back-edge final_review → draft_reply with max 1 retry, then escalate_human; every
+step traced), `routers/{base,llm_router,laya_router,hybrid_router}.py`, `llm_nodes.py` (ask_for_info, draft_reply,
+investigate_technical with native Ollama tool calling, max 4 rounds; guidance + pitfalls injected from the
+incoming edge and all upstream decisions), `tracing.py`, `state_render.py`, `eval/metrics.py`, CLI `hpg run` / `hpg eval`.
+- LLMRouter: opaque letters A.. plus `Z: none applies`, JSON-schema `enum` output, thinking off, confidence =
+  logprob of the chosen letter renormalised over the allowed letters.
+- LayaRouter: one `choice` question per decision node (opaque keys, edge conditions as option text, `Z` option);
+  state = `{"ticket", "facts"[, "reply"]}`, ticket pre-truncated head+tail with Laya's own tokenizer so facts
+  always survive; optional `guard_questions()` preset mode for the guard; warm-up calls at load.
+- HybridRouter: Laya first; LLM when gate score < tau or Laya picks `Z`; both answers recorded in the trace.
+**Key numbers:** `uv run pytest -q` → 25 passed (includes: gold-following router reproduces all 220 gold paths and
+final actions through the real engine + metrics; retry → escalate rule; router logic with fake models).
+`hpg run` on T0013 (refund_standard) is correct under llm, laya and hybrid. On T0035 (technical ticket that mentions an
+order id), Laya zero-shot routes classify → lookup_order_delivery (wrong, answer_confidence low), and hybrid recovers via
+fallback. Observed per-step routing wall time: LLM ≈ 2.0–2.6 s, Laya ≈ 30–100 ms (warm). Zero-shot Laya entropy
+`confidence` is 0.03–0.16 on these steps, so at the placeholder tau 0.5 every hybrid step falls back.
+**Deviations from plan:** there is no separate `checks.py`: guard / final_review are laya_check nodes routed by the
+active router (the LayaRouter guard preset mode lives in `laya_router.py`). Under E1 the LLM also decides guard and
+final_review, matching "LLMRouter everywhere". When the LLM answers `Z`, it takes the node's last edge with
+confidence 0.
+**Open issues:** the first Laya CUDA call costs 1.7–2.6 s, so a warm-up was added.
+
