@@ -257,7 +257,7 @@ most paths.
 **Deviations from plan:** E5 was added to `--all`. After the metrics above were first computed, the engine was
 fixed to not crash when a misroute reaches policy_check or issue_refund without an order, and the 12 affected
 traces (E2 6, E3 3, E4 3) were rerun with the fix. Accuracy numbers did not change; engine errors went to 0.
-**Open issues:** final_review false rejects; Ollama per-request overhead (~1.2 s of each ~2.4 s LLM routing call).
+**Open issues:** final_review false rejects; Ollama per-request overhead (p50 1.22 s of each 2.38 s LLM routing call).
 
 ## Phase 7 – Fine-tune Laya, free Kaggle 2×T4 (DONE 2026-09-25)
 **Data:** `scripts/make_finetune_data.py` → `data/finetune/refunddesk_routing_train.jsonl`: 2,013 routing decisions
@@ -285,7 +285,7 @@ predicted. With a Laya fine-tuned for free on 2k templated decisions (E5), routi
 0.998 vs 0.989 including the guard). Final-action accuracy is still 4 points lower (0.933 vs 0.973), almost
 entirely from final_review false rejects.
 **How much faster is each routing step?** Laya on GPU: p50 79–97 ms vs 2,380 ms for LLM routing, ~25–30× faster.
-Of the LLM's 2.4 s, ~1.2 s is Ollama per-request overhead; on pure compute time the gap is ~1.5×. Laya on CPU (E4)
+Measured on the 545 E1 LLM routing calls: wall p50 2,377 ms = model compute p50 918 ms + Ollama per-request overhead p50 1,224 ms. So even against compute alone, Laya is ~9.5× faster. Laya on CPU (E4)
 is 1.9 s p50, so the CPU fallback costs nearly all of the speed-up. End-to-end ticket time p50: 15.7 s (E1) →
 9.6 s (E3) → 5.4 s (E5).
 **How many LLM calls and tokens are saved?** Per ticket: E1 4.69 calls / 1,711 tokens; E3 2.57 / 1,112 (−45% /
