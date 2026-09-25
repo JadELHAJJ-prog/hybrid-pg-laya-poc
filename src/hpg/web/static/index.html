@@ -100,6 +100,7 @@ select { font: inherit; font-size: 12px; padding: 4px 8px; border-radius: 8px; b
 table { border-collapse: collapse; width: 100%; font-size: 12px; }
 th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--grid); vertical-align: top; }
 th { color: var(--text-muted); font-weight: 500; }
+tfoot td { border-top: 2px solid var(--axis); border-bottom: 0; padding-top: 7px; }
 td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .badge { font-size: 11px; padding: 1px 7px; border-radius: 6px; color: #fff; white-space: nowrap; }
 .confbar { display: inline-block; width: 60px; height: 6px; background: var(--grid); border-radius: 3px; vertical-align: middle;
@@ -176,7 +177,7 @@ svg text { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
     </div>
     <svg id="graphsvg" viewBox="0 0 1020 430" role="img" aria-label="Procedural graph"></svg>
     <div class="steps"><table id="steps"><thead><tr><th>#</th><th>Node</th><th>Decided by</th><th>Outcome</th>
-      <th>Confidence</th><th class="num">Time</th></tr></thead><tbody></tbody></table></div>
+      <th>Confidence</th><th class="num">Time</th></tr></thead><tbody></tbody><tfoot></tfoot></table></div>
   </div>
 </section>
 
@@ -330,7 +331,7 @@ function stepRow(i, r) {
 async function send() {
   const text = $("#input").value.trim(); if (!text) return;
   $("#send").disabled = true; $("#input").value = ""; addMsg("user", esc(text));
-  $("#steps tbody").innerHTML = ""; TAKEN = {}; VISITED = new Set(); CURRENT = null; drawGraph();
+  $("#steps tbody").innerHTML = ""; $("#steps tfoot").innerHTML = ""; TAKEN = {}; VISITED = new Set(); CURRENT = null; drawGraph();
   const pending = addMsg("agent", '<span class="muted">working…</span>');
   let i = 0, stats = {s1: 0, s2: 0, llmcalls: 0, tokens: 0}, t0 = performance.now();
   try {
@@ -351,7 +352,11 @@ async function send() {
              <span class="chip"><b>${stats.llmcalls}</b> LLM calls · <b>${stats.tokens}</b> tokens</span><span class="chip"><b>${secs}</b> s</span>
              <span class="chip" title="${esc(r.trace)}">${r.path.length} steps</span></div>`;
           CURRENT = null; drawGraph(); continue; }
-        if (r.type === "end") continue;
+        if (r.type === "end") { const ms = r.wall_ms || 0;
+          $("#steps tfoot").innerHTML = `<tr><td></td><td colspan="4"><b>Total execution time</b>
+            <span class="muted small">(all steps, excluding model loading)</span></td>
+            <td class="num"><b>${ms >= 1000 ? fmt(ms / 1000, 1) + " s" : Math.round(ms) + " ms"}</b></td></tr>`;
+          $("#steps tfoot").scrollIntoView({block: "nearest"}); continue; }
         const noise = (r.type === "route" && r.router === "deterministic") || (r.type === "node" && r.executor !== "tool");
         if (!noise) { i++; stepRow(i, r); }
         if (r.type === "node" || r.type === "llm_node") { VISITED.add(r.node); CURRENT = r.node;
