@@ -19,7 +19,7 @@ class HybridRouter(Router):
         d = self.laya.route(state, node_id, edges, question)
         score = d.confidence if self.gate == "confidence" else (d.answer_confidence or 0.0)
         if score >= self.tau and d.raw_choice != NONE_KEY:
-            return d
+            return d.model_copy(update={"detail": {**d.detail, "gate": self.gate, "tau": self.tau}})
         f = self.llm.route(state, node_id, edges, question)
         return f.model_copy(
             update={
@@ -27,6 +27,13 @@ class HybridRouter(Router):
                 "latency_ms": d.latency_ms + f.latency_ms,
                 "laya_confidence": score,
                 "laya_target": d.target,
-                "detail": {**f.detail, "laya_probs": d.probs, "laya_raw_choice": d.raw_choice},
+                "detail": {
+                    **f.detail,
+                    "laya_probs": d.probs,
+                    "laya_raw_choice": d.raw_choice,
+                    "gate": self.gate,
+                    "tau": self.tau,
+                    "fallback_reason": "laya_chose_none" if d.raw_choice == NONE_KEY else "below_tau",
+                },
             }
         )

@@ -11,8 +11,11 @@ Verified against installed laya 0.3.20 (see RESULTS.md Phase 1):
 from __future__ import annotations
 
 import json
+import math
 import time
 from typing import Any
+
+import numpy as np
 
 from hpg.routers.base import NONE_KEY, NONE_TEXT, Router, RoutingDecision, option_keys
 from hpg.schema import AgentState, Edge, ProceduralGraph
@@ -53,6 +56,7 @@ class LayaRouter(Router):
         temperatures: dict[str, float] | None = None,
         use_none_option: bool = True,
         checkpoint: str = "",
+        post_temperatures: dict[int, float] | None = None,
     ):
         self.agent = agent
         self.g = graph
@@ -65,6 +69,12 @@ class LayaRouter(Router):
         self.state_budget = int(cfg["max_len"]) - int(cfg["head_max_len"]) - 4
         if temperatures:
             self.set_temperatures(temperatures)
+        # Per exact option count temperatures fitted on dev (Phase 5). Laya's own buckets ("3-5") are too coarse
+        # for our nodes (3, 4 and 5 options), so Laya's choice temperatures are neutralised and we apply ours.
+        self.post_temperatures = {int(k): float(v) for k, v in (post_temperatures or {}).items()}
+        if self.post_temperatures:
+            for b in ("2", "3-5", "6-10", "11+"):
+                self.agent.temperature_by_options[f"choice:{b}"] = 1.0
 
     def warmup(self, n: int = 3) -> None:
         """First CUDA calls pay kernel/autotune cost (~1.7-2.6 s measured); keep it out of latency stats."""
@@ -89,6 +99,7 @@ class LayaRouter(Router):
             temperatures=c.get("temperatures"),
             use_none_option=c.get("none_option", True),
             checkpoint=f"{repo}/{sub or ''}",
+            post_temperatures=c.get("post_temperatures"),
         )
         router.warmup()
         return router
@@ -124,6 +135,8 @@ class LayaRouter(Router):
         res = self.agent.predict(rendered, q)
         latency = (time.perf_counter() - t0) * 1000
         a = res["answers"]["route"]
+        if self.post_temperatures:
+            a = self._recalibrate(a)
         key_to_target = {k: e.target for k, e in zip(keys, edges, strict=True)}
         choice = a["choice"]
         probs = {key_to_target.get(k, "NONE"): float(p) for k, p in a["probabilities"].items()}
@@ -147,6 +160,24 @@ class LayaRouter(Router):
                 "n_options": len(criteria),
             },
         )
+
+    def _recalibrate(self, a: dict) -> dict:
+        keys = list(a["probabilities"])
+        p = np.clip(np.array([a["probabilities"][k] for k in keys], dtype=float), 1e-6, None)
+        T = self.post_temperatures.get(len(keys), 1.0)
+        z = np.log(p / p.sum()) / T
+        q = np.exp(z - z.max())
+        q /= q.sum()
+        ent = -float((q * np.log(q)).sum()) / math.log(len(q))
+        i = int(q.argmax())
+        return {
+            **a,
+            "choice": keys[i],
+            "probabilities": dict(zip(keys, q.tolist(), strict=True)),
+            "answer_confidence": float(q[i]),
+            "confidence": 1.0 - ent,
+            "raw_probabilities": a["probabilities"],
+        }
 
     def _guard_preset(self, state: AgentState, edges: list[Edge]) -> RoutingDecision:
         import laya

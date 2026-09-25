@@ -135,13 +135,12 @@ class Engine:
                     else:
                         state.edge_traversals[key] = used + 1
                         state.review_feedback = edge.condition
-                if d.router != "deterministic":
-                    tracer.log(
-                        type="route", node=node_id, path=list(state.path), target=target,
-                        chosen_edge=edge.target, note=note, **d.model_dump(exclude={"target"}),
-                    )  # fmt: skip
-                    if len(self.g.out_edges(node_id)) > 1:
-                        state.decision_edges.append(edge)
+                tracer.log(
+                    type="route", node=node_id, path=list(state.path), target=target,
+                    chosen_edge=edge.target, note=note, **d.model_dump(exclude={"target"}),
+                )  # fmt: skip
+                if d.router != "deterministic" and note is None:
+                    state.decision_edges.append(edge)
                 state.incoming_edge = edge
                 node_id = target
         except Exception as e:  # noqa: BLE001 - record and stop; eval counts it as a failure

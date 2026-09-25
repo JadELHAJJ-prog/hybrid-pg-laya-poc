@@ -22,7 +22,9 @@ def load_tickets(path: Path) -> dict[str, dict]:
 def final_action_from_trace(steps: list[dict]) -> str:
     """Derive the final action from the ledger + path in the trace (same vocabulary as gold)."""
     end = next((s for s in reversed(steps) if s.get("type") == "end"), None)
-    ledger = end["ledger"] if end else []
+    if end is None or end.get("error"):
+        return "error"
+    ledger = end["ledger"]
     path = end["path"] if end else [s["node"] for s in steps if s.get("type") == "node"]
     if any(e["action"] == "escalate" for e in ledger):
         return "escalate_human"
@@ -48,7 +50,7 @@ def decisions_frame(run_dir: Path, tickets: dict[str, dict]) -> pd.DataFrame:
         t = tickets[f.stem]
         gold = t["gold_path"]
         for s in steps:
-            if s.get("type") != "route":
+            if s.get("type") != "route" or s.get("router") == "deterministic":
                 continue
             node, target = s["node"], s["target"]
             walked = s["path"]  # path so far, ending at `node`
@@ -108,7 +110,9 @@ def ticket_frame(run_dir: Path, tickets: dict[str, dict]) -> pd.DataFrame:
                 ),
                 "fallbacks": sum(s["router"] == "llm_fallback" for s in routes),
                 "laya_routes": sum(s["router"] == "laya" for s in routes),
-                "guard_flagged": "guard" in path and path[path.index("guard") + 1] == "escalate_human",
+                "guard_flagged": "guard" in path
+                and path.index("guard") + 1 < len(path)
+                and path[path.index("guard") + 1] == "escalate_human",
                 "review_pass_first": _review_first_pass(steps),
                 "error": end.get("error"),
             }

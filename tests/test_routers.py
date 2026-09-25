@@ -118,3 +118,12 @@ def test_hybrid_gate():
     assert d.target == "y" and d.router == "llm_fallback" and d.laya_target == "x" and d.laya_confidence == 0.3
     h = HybridRouter(Const("x", 0.9, raw="Z"), llm, tau=0.5)
     assert h.route(None, "n", [], "q").router == "llm_fallback"
+
+
+def test_laya_post_temperature_flattens(graph):
+    agent = FakeAgent({"A": 0.7, "B": 0.2, "Z": 0.1})
+    edges = graph.out_edges("lookup_order")
+    sharp = LayaRouter(agent, graph).route(st(), "lookup_order", edges, "q")
+    flat = LayaRouter(agent, graph, post_temperatures={3: 3.0}).route(st(), "lookup_order", edges, "q")
+    assert flat.target == sharp.target and flat.answer_confidence < sharp.answer_confidence
+    assert agent.temperature_by_options["choice:3-5"] == 1.0

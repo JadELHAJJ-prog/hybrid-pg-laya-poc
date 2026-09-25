@@ -31,4 +31,3 @@ laya:
 routing:
   tau: 0.5                     # tuned on dev in Phase 5
   max_steps: 20
-  final_review_max_retries: 1

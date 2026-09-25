@@ -34,8 +34,8 @@ def build_prompt(state: AgentState, node_id: str, edges: list[Edge], question: s
 
 def _letter_prob(call, letter: str, allowed: list[str]) -> tuple[float, dict[str, float]]:
     """P(letter) from the logprobs of the generated letter token, renormalised over allowed letters."""
-    if not call.logprobs:
-        return 1.0, {letter: 1.0}
+    if not call.logprobs:  # no signal: report a neutral 0.5 rather than a fake certainty
+        return 0.5, {letter: 0.5}
     for lp in call.logprobs:
         if lp.token.strip() == letter:
             cands = {t.token.strip(): t.logprob for t in (lp.top_logprobs or [])}
@@ -43,8 +43,8 @@ def _letter_prob(call, letter: str, allowed: list[str]) -> tuple[float, dict[str
             ps = {k: math.exp(v) for k, v in cands.items() if k in allowed}
             z = sum(ps.values()) or 1.0
             ps = {k: v / z for k, v in ps.items()}
-            return ps.get(letter, 1.0), ps
-    return 1.0, {letter: 1.0}
+            return ps.get(letter, 0.5), ps
+    return 0.5, {letter: 0.5}
 
 
 class LLMRouter(Router):
