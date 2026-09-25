@@ -27,6 +27,7 @@ laya:
   temperature: 1.0             # fitted on dev in Phase 5
   max_tokens: 1024
   bf16_weights: true           # store weights in bf16 on CUDA (see laya_router.load_agent)
+  finetuned: models/laya_refunddesk   # Phase 7: unzip the Kaggle output here (gitignored)
 
 routing:
   tau: 0.5                     # tuned on dev in Phase 5

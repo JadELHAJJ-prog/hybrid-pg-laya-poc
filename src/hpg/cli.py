@@ -167,5 +167,28 @@ def eval_cmd(
         write_report(cfg, split)
 
 
+@app.command()
+def calibrate(
+    stage: str = typer.Option("all", help="collect | score | analyze | all"),
+    split: str = typer.Option("dev"),
+    limit: int | None = typer.Option(None),
+) -> None:
+    """Phase 5 (dev only): collect decisions, replay through Laya checkpoints, fit temperatures, choose tau."""
+    if split == "test":
+        raise typer.BadParameter("calibration/tuning on the test split is not allowed (plan §12.3)")
+    from hpg.eval import calibrate as C
+
+    cfg = load_cfg()
+    if stage in ("collect", "all"):
+        typer.echo(f"decisions -> {C.collect(cfg, ROOT, split, limit)}")
+    if stage in ("score", "all"):
+        for name, sub in cfg["laya"].get("candidates", {"typed": "typed-decisions", "english": ""}).items():
+            typer.echo(f"laya {name} -> {C.score_laya(cfg, ROOT, name, sub or None, split)}")
+    if stage in ("analyze", "all"):
+        from hpg.eval.report import calibration_report
+
+        calibration_report(cfg, ROOT, split)
+
+
 if __name__ == "__main__":
     app()
