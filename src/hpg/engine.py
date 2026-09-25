@@ -44,6 +44,12 @@ class Engine:
             if r["found"]:
                 f["order_status"] = r["order"]["status"]
             return {"found": r["found"], "status": f.get("order_status")}
+        if node.tool in ("check_refund_policy", "issue_refund") and not (
+            state.tool_results.get("lookup_order") or {}
+        ).get("order"):
+            # Reached only after a misroute (router said "found" when it was not): record, don't crash.
+            f["tool_error"] = f"{node.tool}: no order available"
+            return {"error": f["tool_error"]}
         if node.tool == "check_refund_policy":
             order = state.tool_results["lookup_order"]["order"]
             r = w.check_refund_policy(order)

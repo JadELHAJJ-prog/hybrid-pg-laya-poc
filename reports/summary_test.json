@@ -1,0 +1,197 @@
+{
+ "E1": {
+  "n_tickets": 150,
+  "routing_acc": 0.9966329966329966,
+  "routing_n": 297,
+  "decision_acc_incl_guard": 0.9888143176733781,
+  "path_exact": 0.9666666666666667,
+  "final_action_acc": 0.9733333333333334,
+  "guard_recall_adv": 1.0,
+  "guard_fpr_clean": 0.02877697841726619,
+  "route_p50_ms": 2380.15641300035,
+  "route_p95_ms": 2909.503764000601,
+  "e2e_p50_ms": 15705.957913499788,
+  "e2e_p95_ms": 24320.987517400223,
+  "llm_calls_per_ticket": 4.693333333333333,
+  "llm_calls_routing_per_ticket": 3.6333333333333333,
+  "llm_tokens_per_ticket": 1711.2266666666667,
+  "llm_tokens_routing_per_ticket": 1079.8133333333333,
+  "llm_tokens_nodes_per_ticket": 631.4133333333333,
+  "fallback_rate": 0.0,
+  "review_first_pass_rate": 1.0,
+  "errors": 0,
+  "peak_vram_mib": 5797,
+  "route_latency_by_router": {
+   "llm": {
+    "p50": 2380.2,
+    "p95": 2909.5,
+    "n": 298
+   }
+  },
+  "routing_acc_by_node": {
+   "classify": 0.993,
+   "lookup_order": 1.0,
+   "lookup_order_delivery": 1.0,
+   "policy_check": 1.0
+  }
+ },
+ "E2": {
+  "n_tickets": 150,
+  "routing_acc": 0.8344827586206897,
+  "routing_n": 290,
+  "decision_acc_incl_guard": 0.875,
+  "path_exact": 0.6,
+  "final_action_acc": 0.6266666666666667,
+  "guard_recall_adv": 0.45454545454545453,
+  "guard_fpr_clean": 0.007194244604316547,
+  "route_p50_ms": 85.38298399980704,
+  "route_p95_ms": 117.92204339981252,
+  "e2e_p50_ms": 4388.485195000158,
+  "e2e_p95_ms": 11508.927332099754,
+  "llm_calls_per_ticket": 0.78,
+  "llm_calls_routing_per_ticket": 0.0,
+  "llm_tokens_per_ticket": 431.44666666666666,
+  "llm_tokens_routing_per_ticket": 0.0,
+  "llm_tokens_nodes_per_ticket": 431.44666666666666,
+  "fallback_rate": 0.0,
+  "review_first_pass_rate": 0.9294117647058824,
+  "errors": 0,
+  "peak_vram_mib": 6842,
+  "route_latency_by_router": {
+   "laya": {
+    "p50": 85.4,
+    "p95": 117.9,
+    "n": 309
+   }
+  },
+  "routing_acc_by_node": {
+   "classify": 0.841,
+   "lookup_order": 0.884,
+   "lookup_order_delivery": 0.786,
+   "policy_check": 0.782
+  }
+ },
+ "E3": {
+  "n_tickets": 150,
+  "routing_acc": 0.9501661129568106,
+  "routing_n": 301,
+  "decision_acc_incl_guard": 0.9645232815964523,
+  "path_exact": 0.8333333333333334,
+  "final_action_acc": 0.8333333333333334,
+  "guard_recall_adv": 1.0,
+  "guard_fpr_clean": 0.007194244604316547,
+  "route_p50_ms": 168.62559000037436,
+  "route_p95_ms": 2940.4915088003695,
+  "e2e_p50_ms": 9554.368710500057,
+  "e2e_p95_ms": 20673.501585049413,
+  "llm_calls_per_ticket": 2.5733333333333333,
+  "llm_calls_routing_per_ticket": 1.5466666666666666,
+  "llm_tokens_per_ticket": 1112.0333333333333,
+  "llm_tokens_routing_per_ticket": 482.0133333333333,
+  "llm_tokens_nodes_per_ticket": 630.02,
+  "fallback_rate": 0.4128113879003559,
+  "review_first_pass_rate": 0.9081632653061225,
+  "errors": 0,
+  "peak_vram_mib": 6842,
+  "route_latency_by_router": {
+   "laya": {
+    "p50": 79.7,
+    "p95": 146.2,
+    "n": 155
+   },
+   "llm_fallback": {
+    "p50": 2528.6,
+    "p95": 3147.4,
+    "n": 150
+   }
+  },
+  "routing_acc_by_node": {
+   "classify": 0.957,
+   "lookup_order": 0.944,
+   "lookup_order_delivery": 0.848,
+   "policy_check": 1.0
+  }
+ },
+ "E4": {
+  "n_tickets": 150,
+  "routing_acc": 0.9501661129568106,
+  "routing_n": 301,
+  "decision_acc_incl_guard": 0.9645232815964523,
+  "path_exact": 0.8333333333333334,
+  "final_action_acc": 0.8333333333333334,
+  "guard_recall_adv": 1.0,
+  "guard_fpr_clean": 0.007194244604316547,
+  "route_p50_ms": 3694.3523379995895,
+  "route_p95_ms": 7722.330831000003,
+  "e2e_p50_ms": 17465.438619999986,
+  "e2e_p95_ms": 32289.656778448072,
+  "llm_calls_per_ticket": 2.6,
+  "llm_calls_routing_per_ticket": 1.5733333333333333,
+  "llm_tokens_per_ticket": 1122.0066666666667,
+  "llm_tokens_routing_per_ticket": 492.3466666666667,
+  "llm_tokens_nodes_per_ticket": 629.66,
+  "fallback_rate": 0.4199288256227758,
+  "review_first_pass_rate": 0.9081632653061225,
+  "errors": 0,
+  "peak_vram_mib": 6842,
+  "route_latency_by_router": {
+   "laya": {
+    "p50": 1855.1,
+    "p95": 5515.8,
+    "n": 154
+   },
+   "llm_fallback": {
+    "p50": 4211.6,
+    "p95": 8518.0,
+    "n": 151
+   }
+  },
+  "routing_acc_by_node": {
+   "classify": 0.957,
+   "lookup_order": 0.944,
+   "lookup_order_delivery": 0.848,
+   "policy_check": 1.0
+  }
+ },
+ "E5": {
+  "n_tickets": 150,
+  "routing_acc": 0.9967320261437909,
+  "routing_n": 306,
+  "decision_acc_incl_guard": 0.9978070175438597,
+  "path_exact": 0.9333333333333333,
+  "final_action_acc": 0.9333333333333333,
+  "guard_recall_adv": 1.0,
+  "guard_fpr_clean": 0.0,
+  "route_p50_ms": 96.76613249939692,
+  "route_p95_ms": 116.2256987499859,
+  "e2e_p50_ms": 5395.681625499492,
+  "e2e_p95_ms": 17126.147094550648,
+  "llm_calls_per_ticket": 1.3133333333333332,
+  "llm_calls_routing_per_ticket": 0.16,
+  "llm_tokens_per_ticket": 753.44,
+  "llm_tokens_routing_per_ticket": 50.653333333333336,
+  "llm_tokens_nodes_per_ticket": 702.7866666666666,
+  "fallback_rate": 0.04240282685512368,
+  "review_first_pass_rate": 0.9108910891089109,
+  "errors": 0,
+  "peak_vram_mib": 6862,
+  "route_latency_by_router": {
+   "laya": {
+    "p50": 96.7,
+    "p95": 115.5,
+    "n": 305
+   },
+   "llm_fallback": {
+    "p50": 2689.4,
+    "p95": 2689.4,
+    "n": 1
+   }
+  },
+  "routing_acc_by_node": {
+   "classify": 0.993,
+   "lookup_order": 1.0,
+   "lookup_order_delivery": 1.0,
+   "policy_check": 1.0
+  }
+ }
+}

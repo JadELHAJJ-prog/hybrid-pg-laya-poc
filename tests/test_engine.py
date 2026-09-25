@@ -64,3 +64,11 @@ def test_review_retry_then_escalate(tmp_path, graph, world):
     assert [e["action"] for e in st.ledger] == ["refund", "escalate"]
     notes = [r.get("note") for r in read_trace(tmp_path / "x.jsonl") if r["type"] == "route"]
     assert any(n and "exhausted" in n for n in notes)
+
+
+def test_misroute_into_policy_check_does_not_crash(tmp_path, graph, world):
+    t = next(t for t in tickets() if t["gold_final_action"] == "ask_for_info" and "lookup_order" in t["gold_path"])
+    bad = t["gold_path"][:4] + ["policy_check", "deny_with_alternative", "draft_reply", "final_review", "END"]
+    st = Engine(graph, world, GoldRouter(bad), FakeLLM()).run(t, Tracer(tmp_path / "m.jsonl"))
+    end = read_trace(tmp_path / "m.jsonl")[-1]
+    assert end["error"] is None and st.path == bad and st.facts["tool_error"].startswith("check_refund_policy")

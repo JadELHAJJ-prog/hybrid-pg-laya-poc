@@ -163,7 +163,7 @@ def run_experiment(cfg: dict, exp: str, split: str, limit: int | None = None, re
 def eval_cmd(
     exp: list[str] = typer.Option(None, help="experiment ids (E1..E5); repeatable"),
     split: str = typer.Option("test"),
-    all_: bool = typer.Option(False, "--all", help="run E1-E4 on test, then write the report"),
+    all_: bool = typer.Option(False, "--all", help="run E1-E4 (+E5 if the fine-tuned checkpoint exists) on test, then write the report"),
     limit: int | None = typer.Option(None),
     fresh: bool = typer.Option(False, help="delete existing traces first"),
 ) -> None:
@@ -173,6 +173,8 @@ def eval_cmd(
 
     cfg = load_cfg()
     exps = ["E1", "E2", "E3", "E4"] if all_ else (exp or ["E3"])
+    if all_ and (ROOT / cfg["laya"]["finetuned"] / "model.safetensors").exists():
+        exps.append("E5")  # Phase 7 checkpoint present
     tick = lt(ROOT / cfg["paths"]["tickets"])
     summaries = {}
     for e in exps:
