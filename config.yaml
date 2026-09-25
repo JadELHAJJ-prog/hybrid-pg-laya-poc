@@ -1,0 +1,33 @@
+# Single source of truth for model tags, thresholds and paths. Snapshotted into every run dir.
+today: "2026-09-20"          # fixed "today" so refund policy windows are deterministic
+seed: 1234
+
+paths:
+  graph: graphs/refunddesk_v1.yaml
+  orders: data/orders.json
+  kb: data/kb.json
+  service_status: data/service_status.json
+  tickets: data/tickets.jsonl
+  runs: runs
+
+llm:
+  host: http://localhost:11434
+  model: qwen3.5-9b-text   # local build of hf.co/unsloth/Qwen3.5-9B-GGUF:Q4_K_M without mmproj; see ollama/Modelfile.qwen3.5-9b-text
+  num_ctx: 8192
+  temperature: 0.0
+  think_routing: false
+  think_nodes: false
+  keep_alive: 30m
+  max_tool_rounds: 4
+
+laya:
+  repo: convaiinnovations/laya
+  subfolder: typed-decisions   # "" = English root checkpoint; chosen in Phase 5
+  device: cuda                 # cuda | cpu (fallback a)
+  temperature: 1.0             # fitted on dev in Phase 5
+  max_tokens: 1024
+
+routing:
+  tau: 0.5                     # tuned on dev in Phase 5
+  max_steps: 20
+  final_review_max_retries: 1

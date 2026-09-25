@@ -1,0 +1,9 @@
+# Text-only Qwen3.5-9B for the PoC: unsloth Q4_K_M GGUF without the mmproj vision projector.
+# Renderer/parser copied from the official ollama.com qwen3.5:9b config (renderer=qwen3.5, parser=qwen3.5).
+# Create:  ollama pull hf.co/unsloth/Qwen3.5-9B-GGUF:Q4_K_M ; set FROM to its model blob (ollama show --modelfile) ;
+#          ollama create qwen3.5-9b-text -f ollama/Modelfile.qwen3.5-9b-text ; ollama rm hf.co/unsloth/Qwen3.5-9B-GGUF:Q4_K_M
+FROM /usr/share/ollama/.ollama/models/blobs/sha256-03b74727a860a56338e042c4420bb3f04b2fec5734175f4cb9fa853daf52b7e8
+RENDERER qwen3.5
+PARSER qwen3.5
+PARAMETER num_ctx 8192
+PARAMETER temperature 0

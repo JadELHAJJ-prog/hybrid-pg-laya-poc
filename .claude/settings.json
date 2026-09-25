@@ -1,0 +1,76 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(uv run *)",
+      "Bash(uv sync*)",
+      "Bash(uv add *)",
+      "Bash(.venv/bin/*)",
+      "Bash(ollama list*)",
+      "Bash(ollama ps*)",
+      "Bash(ollama show *)",
+      "Bash(nvidia-smi*)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git add *)",
+      "Bash(graphify *)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/no_paid_apis.py\"",
+            "timeout": 10,
+            "statusMessage": "Checking for paid-API usage"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|Grep",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/jad-elhajj/.local/bin/graphify hook-guard search"
+          }
+        ]
+      },
+      {
+        "matcher": "Read|Glob",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/home/jad-elhajj/.local/bin/graphify hook-guard read"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/ruff_fix.sh\"",
+            "timeout": 30,
+            "statusMessage": "ruff format/fix"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/session_status.sh\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}

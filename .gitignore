@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+runs/*
+!runs/.gitkeep
+*.egg-info/
+.claude/settings.local.json
+graphify-out/cache/
+models/

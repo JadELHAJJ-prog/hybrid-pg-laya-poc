@@ -1,0 +1,49 @@
+[project]
+name = "hpg"
+version = "0.1.0"
+description = "Hybrid System-1 (Laya) / System-2 (local LLM) agent on a Procedural Graph - PoC"
+readme = "README.md"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "laya>=0.3.20",
+    "ollama>=0.4",
+    "pydantic>=2.6",
+    "pyyaml>=6.0",
+    "networkx>=3.2",
+    "rank-bm25>=0.2.2",
+    "numpy>=1.26",
+    "pandas>=2.1",
+    "scikit-learn>=1.4",
+    "matplotlib>=3.8",
+    "typer>=0.12",
+    "nvidia-ml-py>=12.535",
+]
+
+[project.scripts]
+hpg = "hpg.cli:app"
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/hpg"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# The host PYTHONPATH exposes ROS (python3.12) pytest plugins; keep them out of this 3.11 venv.
+addopts = "-p no:ament_copyright -p no:ament_flake8 -p no:ament_pep257 -p no:ament_xmllint -p no:ament_lint -p no:launch_ros -p no:launch_testing"
+markers = [
+    "gpu: needs GPU / real models (deselect with -m 'not gpu')",
+    "ollama: needs a running Ollama server with the configured model",
+]
+
+[tool.ruff]
+line-length = 110
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
