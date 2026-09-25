@@ -1,0 +1,18 @@
+{
+ "payments": {
+  "status": "degraded",
+  "note": "Delays in card authorizations since 2026-09-19 08:00 UTC."
+ },
+ "login": {
+  "status": "degraded",
+  "note": "Elevated login errors on Android app v5.2; fix in v5.2.1."
+ },
+ "shipping-api": {
+  "status": "operational",
+  "note": ""
+ },
+ "notifications": {
+  "status": "operational",
+  "note": ""
+ }
+}

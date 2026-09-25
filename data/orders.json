@@ -1,0 +1,1192 @@
+[
+ {
+  "order_id": "ORD-10001",
+  "customer_email": "alex0@example.com",
+  "item": "Wireless earbuds",
+  "amount": 79.99,
+  "currency": "USD",
+  "order_date": "2026-08-19",
+  "delivered_date": "2026-08-25",
+  "status": "delivered",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50000",
+    "amount": 79.99,
+    "date": "2026-08-19"
+   }
+  ],
+  "_bucket": "refundable"
+ },
+ {
+  "order_id": "ORD-10002",
+  "customer_email": "sam1@example.com",
+  "item": "Desk lamp",
+  "amount": 42.75,
+  "currency": "USD",
+  "order_date": "2026-09-12",
+  "delivered_date": "2026-09-15",
+  "status": "delivered",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50003",
+    "amount": 42.75,
+    "date": "2026-09-12"
+   }
+  ],
+  "_bucket": "refundable"
+ },
+ {
+  "order_id": "ORD-10003",
+  "customer_email": "maria2@example.com",
+  "item": "Office chair",
+  "amount": 289.0,
+  "currency": "USD",
+  "order_date": "2026-09-07",
+  "delivered_date": "2026-09-16",
+  "status": "delivered",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50006",
+    "amount": 289.0,
+    "date": "2026-09-07"
+   }
+  ],
+  "_bucket": "refundable"
+ },
+ {
+  "order_id": "ORD-10004",
+  "customer_email": "omar3@example.com",
+  "item": "Backpack",
+  "amount": 68.0,
+  "currency": "USD",
+  "order_date": "2026-08-28",
+  "delivered_date": "2026-08-31",
+  "status": "delivered",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50009",
+    "amount": 68.0,
+    "date": "2026-08-28"
+   }
+  ],
+  "_bucket": "refundable"
+ },
+ {
+  "order_id": "ORD-10005",
+  "customer_email": "lina4@example.com",
+  "item": "Air fryer",
+  "amount": 119.0,
+  "currency": "USD",
+  "order_date": "2026-08-20",
+  "delivered_date": "2026-08-28",
+  "status": "delivered",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50012",
+    "amount": 119.0,
+    "date": "2026-08-20"
+   }
+  ],
+  "_bucket": "refundable"
+ },
+ {
+  "order_id": "ORD-10006",
+  "customer_email": "chen5@example.com",
+  "item": "Smart watch",
+  "amount": 249.0,
+  "currency": "USD",
+  "order_date": "2026-09-13",
+  "delivered_date": "2026-09-16",
+  "status": "delivered",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50015",
+    "amount": 249.0,
+    "date": "2026-09-13"
+   }
+  ],
+  "_bucket": "refundable"
+ },
+ {
+  "order_id": "ORD-10007",
+  "customer_email": "priya6@example.com",
+  "item": "Gaming mouse",
+  "amount": 59.0,
+  "currency": "USD",
+  "order_date": "2026-08-20",
+  "delivered_date": "2026-08-25",
+  "status": "delivered",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50018",
+    "amount": 59.0,
+    "date": "2026-08-20"
+   }
+  ],
+  "_bucket": "refundable"
+ },
+ {
+  "order_id": "ORD-10008",
+  "customer_email": "jonas7@example.com",
+  "item": "Yoga mat",
+  "amount": 34.99,
+  "currency": "USD",
+  "order_date": "2026-09-08",
+  "delivered_date": "2026-09-11",
+  "status": "delivered",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50021",
+    "amount": 34.99,
+    "date": "2026-09-08"
+   }
+  ],
+  "_bucket": "refundable"
+ },
+ {
+  "order_id": "ORD-10009",
+  "customer_email": "fatima8@example.com",
+  "item": "Water bottle",
+  "amount": 24.5,
+  "currency": "USD",
+  "order_date": "2026-09-09",
+  "delivered_date": "2026-09-18",
+  "status": "delivered",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50024",
+    "amount": 24.5,
+    "date": "2026-09-09"
+   }
+  ],
+  "_bucket": "refundable"
+ },
+ {
+  "order_id": "ORD-10010",
+  "customer_email": "leo9@example.com",
+  "item": "Coffee grinder",
+  "amount": 59.9,
+  "currency": "USD",
+  "order_date": "2026-09-13",
+  "delivered_date": "2026-09-18",
+  "status": "delivered",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50027",
+    "amount": 59.9,
+    "date": "2026-09-13"
+   }
+  ],
+  "_bucket": "refundable"
+ },
+ {
+  "order_id": "ORD-10011",
+  "customer_email": "nadia10@example.com",
+  "item": "Phone case",
+  "amount": 19.99,
+  "currency": "USD",
+  "order_date": "2026-08-22",
+  "delivered_date": "2026-08-29",
+  "status": "delivered",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50030",
+    "amount": 19.99,
+    "date": "2026-08-22"
+   }
+  ],
+  "_bucket": "refundable"
+ },
+ {
+  "order_id": "ORD-10012",
+  "customer_email": "tom11@example.com",
+  "item": "Running shoes",
+  "amount": 95.5,
+  "currency": "USD",
+  "order_date": "2026-08-27",
+  "delivered_date": "2026-09-03",
+  "status": "delivered",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50033",
+    "amount": 95.5,
+    "date": "2026-08-27"
+   }
+  ],
+  "_bucket": "refundable"
+ },
+ {
+  "order_id": "ORD-10013",
+  "customer_email": "yuki12@example.com",
+  "item": "Winter jacket",
+  "amount": 179.99,
+  "currency": "USD",
+  "order_date": "2026-08-31",
+  "delivered_date": "2026-09-04",
+  "status": "delivered",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50036",
+    "amount": 179.99,
+    "date": "2026-08-31"
+   }
+  ],
+  "_bucket": "refundable"
+ },
+ {
+  "order_id": "ORD-10014",
+  "customer_email": "rami13@example.com",
+  "item": "Mechanical keyboard",
+  "amount": 129.0,
+  "currency": "USD",
+  "order_date": "2026-09-12",
+  "delivered_date": "2026-09-16",
+  "status": "delivered",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50039",
+    "amount": 129.0,
+    "date": "2026-09-12"
+   }
+  ],
+  "_bucket": "refundable"
+ },
+ {
+  "order_id": "ORD-10015",
+  "customer_email": "ines14@example.com",
+  "item": "Bluetooth speaker",
+  "amount": 89.0,
+  "currency": "USD",
+  "order_date": "2026-05-14",
+  "delivered_date": "2026-05-17",
+  "status": "delivered",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50042",
+    "amount": 89.0,
+    "date": "2026-05-14"
+   }
+  ],
+  "_bucket": "outside_window"
+ },
+ {
+  "order_id": "ORD-10016",
+  "customer_email": "kofi15@example.com",
+  "item": "Wireless earbuds",
+  "amount": 79.99,
+  "currency": "USD",
+  "order_date": "2026-04-27",
+  "delivered_date": "2026-04-30",
+  "status": "delivered",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50045",
+    "amount": 79.99,
+    "date": "2026-04-27"
+   }
+  ],
+  "_bucket": "outside_window"
+ },
+ {
+  "order_id": "ORD-10017",
+  "customer_email": "sara16@example.com",
+  "item": "Desk lamp",
+  "amount": 42.75,
+  "currency": "USD",
+  "order_date": "2026-06-07",
+  "delivered_date": "2026-06-13",
+  "status": "delivered",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50048",
+    "amount": 42.75,
+    "date": "2026-06-07"
+   }
+  ],
+  "_bucket": "outside_window"
+ },
+ {
+  "order_id": "ORD-10018",
+  "customer_email": "ivan17@example.com",
+  "item": "Office chair",
+  "amount": 289.0,
+  "currency": "USD",
+  "order_date": "2026-04-22",
+  "delivered_date": "2026-04-26",
+  "status": "delivered",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50051",
+    "amount": 289.0,
+    "date": "2026-04-22"
+   }
+  ],
+  "_bucket": "outside_window"
+ },
+ {
+  "order_id": "ORD-10019",
+  "customer_email": "maya18@example.com",
+  "item": "Backpack",
+  "amount": 68.0,
+  "currency": "USD",
+  "order_date": "2026-07-31",
+  "delivered_date": "2026-08-08",
+  "status": "delivered",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50054",
+    "amount": 68.0,
+    "date": "2026-07-31"
+   }
+  ],
+  "_bucket": "outside_window"
+ },
+ {
+  "order_id": "ORD-10020",
+  "customer_email": "diego19@example.com",
+  "item": "Air fryer",
+  "amount": 119.0,
+  "currency": "USD",
+  "order_date": "2026-06-02",
+  "delivered_date": "2026-06-08",
+  "status": "delivered",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50057",
+    "amount": 119.0,
+    "date": "2026-06-02"
+   }
+  ],
+  "_bucket": "outside_window"
+ },
+ {
+  "order_id": "ORD-10021",
+  "customer_email": "alex20@example.com",
+  "item": "Smart watch",
+  "amount": 249.0,
+  "currency": "USD",
+  "order_date": "2026-08-01",
+  "delivered_date": "2026-08-08",
+  "status": "delivered",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50060",
+    "amount": 249.0,
+    "date": "2026-08-01"
+   }
+  ],
+  "_bucket": "outside_window"
+ },
+ {
+  "order_id": "ORD-10022",
+  "customer_email": "sam21@example.com",
+  "item": "Gaming mouse",
+  "amount": 59.0,
+  "currency": "USD",
+  "order_date": "2026-05-19",
+  "delivered_date": "2026-05-22",
+  "status": "delivered",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50063",
+    "amount": 59.0,
+    "date": "2026-05-19"
+   }
+  ],
+  "_bucket": "outside_window"
+ },
+ {
+  "order_id": "ORD-10023",
+  "customer_email": "maria22@example.com",
+  "item": "Yoga mat",
+  "amount": 34.99,
+  "currency": "USD",
+  "order_date": "2026-06-05",
+  "delivered_date": "2026-06-12",
+  "status": "delivered",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50066",
+    "amount": 34.99,
+    "date": "2026-06-05"
+   }
+  ],
+  "_bucket": "outside_window"
+ },
+ {
+  "order_id": "ORD-10024",
+  "customer_email": "omar23@example.com",
+  "item": "Water bottle",
+  "amount": 24.5,
+  "currency": "USD",
+  "order_date": "2026-08-06",
+  "delivered_date": "2026-08-11",
+  "status": "delivered",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50069",
+    "amount": 24.5,
+    "date": "2026-08-06"
+   }
+  ],
+  "_bucket": "outside_window"
+ },
+ {
+  "order_id": "ORD-10025",
+  "customer_email": "lina24@example.com",
+  "item": "Coffee grinder",
+  "amount": 59.9,
+  "currency": "USD",
+  "order_date": "2026-08-16",
+  "delivered_date": "2026-08-23",
+  "status": "delivered",
+  "refunded": true,
+  "charges": [
+   {
+    "charge_id": "CH-50072",
+    "amount": 59.9,
+    "date": "2026-08-16"
+   }
+  ],
+  "_bucket": "already_refunded"
+ },
+ {
+  "order_id": "ORD-10026",
+  "customer_email": "chen25@example.com",
+  "item": "Phone case",
+  "amount": 19.99,
+  "currency": "USD",
+  "order_date": "2026-09-08",
+  "delivered_date": "2026-09-16",
+  "status": "delivered",
+  "refunded": true,
+  "charges": [
+   {
+    "charge_id": "CH-50075",
+    "amount": 19.99,
+    "date": "2026-09-08"
+   }
+  ],
+  "_bucket": "already_refunded"
+ },
+ {
+  "order_id": "ORD-10027",
+  "customer_email": "priya26@example.com",
+  "item": "Running shoes",
+  "amount": 95.5,
+  "currency": "USD",
+  "order_date": "2026-09-03",
+  "delivered_date": "2026-09-09",
+  "status": "delivered",
+  "refunded": true,
+  "charges": [
+   {
+    "charge_id": "CH-50078",
+    "amount": 95.5,
+    "date": "2026-09-03"
+   }
+  ],
+  "_bucket": "already_refunded"
+ },
+ {
+  "order_id": "ORD-10028",
+  "customer_email": "jonas27@example.com",
+  "item": "Winter jacket",
+  "amount": 179.99,
+  "currency": "USD",
+  "order_date": "2026-09-02",
+  "delivered_date": "2026-09-07",
+  "status": "delivered",
+  "refunded": true,
+  "charges": [
+   {
+    "charge_id": "CH-50081",
+    "amount": 179.99,
+    "date": "2026-09-02"
+   }
+  ],
+  "_bucket": "already_refunded"
+ },
+ {
+  "order_id": "ORD-10029",
+  "customer_email": "fatima28@example.com",
+  "item": "Mechanical keyboard",
+  "amount": 129.0,
+  "currency": "USD",
+  "order_date": "2026-09-03",
+  "delivered_date": "2026-09-11",
+  "status": "delivered",
+  "refunded": true,
+  "charges": [
+   {
+    "charge_id": "CH-50084",
+    "amount": 129.0,
+    "date": "2026-09-03"
+   }
+  ],
+  "_bucket": "already_refunded"
+ },
+ {
+  "order_id": "ORD-10030",
+  "customer_email": "leo29@example.com",
+  "item": "Bluetooth speaker",
+  "amount": 89.0,
+  "currency": "USD",
+  "order_date": "2026-09-06",
+  "delivered_date": "2026-09-12",
+  "status": "delivered",
+  "refunded": true,
+  "charges": [
+   {
+    "charge_id": "CH-50087",
+    "amount": 89.0,
+    "date": "2026-09-06"
+   }
+  ],
+  "_bucket": "already_refunded"
+ },
+ {
+  "order_id": "ORD-10031",
+  "customer_email": "nadia30@example.com",
+  "item": "Wireless earbuds",
+  "amount": 79.99,
+  "currency": "USD",
+  "order_date": "2026-08-25",
+  "delivered_date": "2026-09-02",
+  "status": "delivered",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50090",
+    "amount": 79.99,
+    "date": "2026-08-25"
+   },
+   {
+    "charge_id": "CH-50091",
+    "amount": 79.99,
+    "date": "2026-08-25"
+   }
+  ],
+  "_bucket": "duplicate"
+ },
+ {
+  "order_id": "ORD-10032",
+  "customer_email": "tom31@example.com",
+  "item": "Desk lamp",
+  "amount": 42.75,
+  "currency": "USD",
+  "order_date": "2026-09-11",
+  "delivered_date": "2026-09-18",
+  "status": "delivered",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50093",
+    "amount": 42.75,
+    "date": "2026-09-11"
+   },
+   {
+    "charge_id": "CH-50094",
+    "amount": 42.75,
+    "date": "2026-09-11"
+   }
+  ],
+  "_bucket": "duplicate"
+ },
+ {
+  "order_id": "ORD-10033",
+  "customer_email": "yuki32@example.com",
+  "item": "Office chair",
+  "amount": 289.0,
+  "currency": "USD",
+  "order_date": "2026-09-13",
+  "delivered_date": "2026-09-16",
+  "status": "delivered",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50096",
+    "amount": 289.0,
+    "date": "2026-09-13"
+   },
+   {
+    "charge_id": "CH-50097",
+    "amount": 289.0,
+    "date": "2026-09-13"
+   }
+  ],
+  "_bucket": "duplicate"
+ },
+ {
+  "order_id": "ORD-10034",
+  "customer_email": "rami33@example.com",
+  "item": "Backpack",
+  "amount": 68.0,
+  "currency": "USD",
+  "order_date": "2026-09-04",
+  "delivered_date": "2026-09-08",
+  "status": "delivered",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50099",
+    "amount": 68.0,
+    "date": "2026-09-04"
+   },
+   {
+    "charge_id": "CH-50100",
+    "amount": 68.0,
+    "date": "2026-09-04"
+   }
+  ],
+  "_bucket": "duplicate"
+ },
+ {
+  "order_id": "ORD-10035",
+  "customer_email": "ines34@example.com",
+  "item": "Air fryer",
+  "amount": 119.0,
+  "currency": "USD",
+  "order_date": "2026-08-21",
+  "delivered_date": "2026-08-27",
+  "status": "delivered",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50102",
+    "amount": 119.0,
+    "date": "2026-08-21"
+   },
+   {
+    "charge_id": "CH-50103",
+    "amount": 119.0,
+    "date": "2026-08-21"
+   }
+  ],
+  "_bucket": "duplicate"
+ },
+ {
+  "order_id": "ORD-10036",
+  "customer_email": "kofi35@example.com",
+  "item": "Smart watch",
+  "amount": 249.0,
+  "currency": "USD",
+  "order_date": "2026-08-22",
+  "delivered_date": "2026-08-28",
+  "status": "delivered",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50105",
+    "amount": 249.0,
+    "date": "2026-08-22"
+   },
+   {
+    "charge_id": "CH-50106",
+    "amount": 249.0,
+    "date": "2026-08-22"
+   }
+  ],
+  "_bucket": "duplicate"
+ },
+ {
+  "order_id": "ORD-10037",
+  "customer_email": "sara36@example.com",
+  "item": "Gaming mouse",
+  "amount": 59.0,
+  "currency": "USD",
+  "order_date": "2026-09-10",
+  "delivered_date": "2026-09-13",
+  "status": "delivered",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50108",
+    "amount": 59.0,
+    "date": "2026-09-10"
+   },
+   {
+    "charge_id": "CH-50109",
+    "amount": 59.0,
+    "date": "2026-09-10"
+   }
+  ],
+  "_bucket": "duplicate"
+ },
+ {
+  "order_id": "ORD-10038",
+  "customer_email": "ivan37@example.com",
+  "item": "Yoga mat",
+  "amount": 34.99,
+  "currency": "USD",
+  "order_date": "2026-09-09",
+  "delivered_date": "2026-09-16",
+  "status": "delivered",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50111",
+    "amount": 34.99,
+    "date": "2026-09-09"
+   },
+   {
+    "charge_id": "CH-50112",
+    "amount": 34.99,
+    "date": "2026-09-09"
+   }
+  ],
+  "_bucket": "duplicate"
+ },
+ {
+  "order_id": "ORD-10039",
+  "customer_email": "maya38@example.com",
+  "item": "Water bottle",
+  "amount": 24.5,
+  "currency": "USD",
+  "order_date": "2026-09-14",
+  "delivered_date": null,
+  "status": "shipped",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50114",
+    "amount": 24.5,
+    "date": "2026-09-14"
+   }
+  ],
+  "_bucket": "shipped"
+ },
+ {
+  "order_id": "ORD-10040",
+  "customer_email": "diego39@example.com",
+  "item": "Coffee grinder",
+  "amount": 59.9,
+  "currency": "USD",
+  "order_date": "2026-09-16",
+  "delivered_date": null,
+  "status": "shipped",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50117",
+    "amount": 59.9,
+    "date": "2026-09-16"
+   }
+  ],
+  "_bucket": "shipped"
+ },
+ {
+  "order_id": "ORD-10041",
+  "customer_email": "alex40@example.com",
+  "item": "Phone case",
+  "amount": 19.99,
+  "currency": "USD",
+  "order_date": "2026-09-17",
+  "delivered_date": null,
+  "status": "shipped",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50120",
+    "amount": 19.99,
+    "date": "2026-09-17"
+   }
+  ],
+  "_bucket": "shipped"
+ },
+ {
+  "order_id": "ORD-10042",
+  "customer_email": "sam41@example.com",
+  "item": "Running shoes",
+  "amount": 95.5,
+  "currency": "USD",
+  "order_date": "2026-09-13",
+  "delivered_date": null,
+  "status": "shipped",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50123",
+    "amount": 95.5,
+    "date": "2026-09-13"
+   }
+  ],
+  "_bucket": "shipped"
+ },
+ {
+  "order_id": "ORD-10043",
+  "customer_email": "maria42@example.com",
+  "item": "Winter jacket",
+  "amount": 179.99,
+  "currency": "USD",
+  "order_date": "2026-09-16",
+  "delivered_date": null,
+  "status": "shipped",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50126",
+    "amount": 179.99,
+    "date": "2026-09-16"
+   }
+  ],
+  "_bucket": "shipped"
+ },
+ {
+  "order_id": "ORD-10044",
+  "customer_email": "omar43@example.com",
+  "item": "Mechanical keyboard",
+  "amount": 129.0,
+  "currency": "USD",
+  "order_date": "2026-09-16",
+  "delivered_date": null,
+  "status": "shipped",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50129",
+    "amount": 129.0,
+    "date": "2026-09-16"
+   }
+  ],
+  "_bucket": "shipped"
+ },
+ {
+  "order_id": "ORD-10045",
+  "customer_email": "lina44@example.com",
+  "item": "Bluetooth speaker",
+  "amount": 89.0,
+  "currency": "USD",
+  "order_date": "2026-09-17",
+  "delivered_date": null,
+  "status": "shipped",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50132",
+    "amount": 89.0,
+    "date": "2026-09-17"
+   }
+  ],
+  "_bucket": "shipped"
+ },
+ {
+  "order_id": "ORD-10046",
+  "customer_email": "chen45@example.com",
+  "item": "Wireless earbuds",
+  "amount": 79.99,
+  "currency": "USD",
+  "order_date": "2026-09-15",
+  "delivered_date": null,
+  "status": "shipped",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50135",
+    "amount": 79.99,
+    "date": "2026-09-15"
+   }
+  ],
+  "_bucket": "shipped"
+ },
+ {
+  "order_id": "ORD-10047",
+  "customer_email": "priya46@example.com",
+  "item": "Desk lamp",
+  "amount": 42.75,
+  "currency": "USD",
+  "order_date": "2026-09-11",
+  "delivered_date": null,
+  "status": "processing",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50138",
+    "amount": 42.75,
+    "date": "2026-09-11"
+   }
+  ],
+  "_bucket": "processing"
+ },
+ {
+  "order_id": "ORD-10048",
+  "customer_email": "jonas47@example.com",
+  "item": "Office chair",
+  "amount": 289.0,
+  "currency": "USD",
+  "order_date": "2026-09-17",
+  "delivered_date": null,
+  "status": "processing",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50141",
+    "amount": 289.0,
+    "date": "2026-09-17"
+   }
+  ],
+  "_bucket": "processing"
+ },
+ {
+  "order_id": "ORD-10049",
+  "customer_email": "fatima48@example.com",
+  "item": "Backpack",
+  "amount": 68.0,
+  "currency": "USD",
+  "order_date": "2026-09-13",
+  "delivered_date": null,
+  "status": "processing",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50144",
+    "amount": 68.0,
+    "date": "2026-09-13"
+   }
+  ],
+  "_bucket": "processing"
+ },
+ {
+  "order_id": "ORD-10050",
+  "customer_email": "leo49@example.com",
+  "item": "Air fryer",
+  "amount": 119.0,
+  "currency": "USD",
+  "order_date": "2026-09-16",
+  "delivered_date": null,
+  "status": "processing",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50147",
+    "amount": 119.0,
+    "date": "2026-09-16"
+   }
+  ],
+  "_bucket": "processing"
+ },
+ {
+  "order_id": "ORD-10051",
+  "customer_email": "nadia50@example.com",
+  "item": "Smart watch",
+  "amount": 249.0,
+  "currency": "USD",
+  "order_date": "2026-09-12",
+  "delivered_date": null,
+  "status": "processing",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50150",
+    "amount": 249.0,
+    "date": "2026-09-12"
+   }
+  ],
+  "_bucket": "processing"
+ },
+ {
+  "order_id": "ORD-10052",
+  "customer_email": "tom51@example.com",
+  "item": "Gaming mouse",
+  "amount": 59.0,
+  "currency": "USD",
+  "order_date": "2026-09-15",
+  "delivered_date": null,
+  "status": "processing",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50153",
+    "amount": 59.0,
+    "date": "2026-09-15"
+   }
+  ],
+  "_bucket": "processing"
+ },
+ {
+  "order_id": "ORD-10053",
+  "customer_email": "yuki52@example.com",
+  "item": "Yoga mat",
+  "amount": 34.99,
+  "currency": "USD",
+  "order_date": "2026-09-14",
+  "delivered_date": null,
+  "status": "lost",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50156",
+    "amount": 34.99,
+    "date": "2026-09-14"
+   }
+  ],
+  "_bucket": "lost"
+ },
+ {
+  "order_id": "ORD-10054",
+  "customer_email": "rami53@example.com",
+  "item": "Water bottle",
+  "amount": 24.5,
+  "currency": "USD",
+  "order_date": "2026-09-17",
+  "delivered_date": null,
+  "status": "lost",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50159",
+    "amount": 24.5,
+    "date": "2026-09-17"
+   }
+  ],
+  "_bucket": "lost"
+ },
+ {
+  "order_id": "ORD-10055",
+  "customer_email": "ines54@example.com",
+  "item": "Coffee grinder",
+  "amount": 59.9,
+  "currency": "USD",
+  "order_date": "2026-09-14",
+  "delivered_date": null,
+  "status": "lost",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50162",
+    "amount": 59.9,
+    "date": "2026-09-14"
+   }
+  ],
+  "_bucket": "lost"
+ },
+ {
+  "order_id": "ORD-10056",
+  "customer_email": "kofi55@example.com",
+  "item": "Phone case",
+  "amount": 19.99,
+  "currency": "USD",
+  "order_date": "2026-09-15",
+  "delivered_date": null,
+  "status": "lost",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50165",
+    "amount": 19.99,
+    "date": "2026-09-15"
+   }
+  ],
+  "_bucket": "lost"
+ },
+ {
+  "order_id": "ORD-10057",
+  "customer_email": "sara56@example.com",
+  "item": "Running shoes",
+  "amount": 95.5,
+  "currency": "USD",
+  "order_date": "2026-09-12",
+  "delivered_date": null,
+  "status": "lost",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50168",
+    "amount": 95.5,
+    "date": "2026-09-12"
+   }
+  ],
+  "_bucket": "lost"
+ },
+ {
+  "order_id": "ORD-10058",
+  "customer_email": "ivan57@example.com",
+  "item": "Winter jacket",
+  "amount": 179.99,
+  "currency": "USD",
+  "order_date": "2026-09-11",
+  "delivered_date": null,
+  "status": "lost",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50171",
+    "amount": 179.99,
+    "date": "2026-09-11"
+   }
+  ],
+  "_bucket": "lost"
+ },
+ {
+  "order_id": "ORD-10059",
+  "customer_email": "maya58@example.com",
+  "item": "Mechanical keyboard",
+  "amount": 129.0,
+  "currency": "USD",
+  "order_date": "2026-08-07",
+  "delivered_date": "2026-08-11",
+  "status": "delivered",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50174",
+    "amount": 129.0,
+    "date": "2026-08-07"
+   },
+   {
+    "charge_id": "CH-50175",
+    "amount": 129.0,
+    "date": "2026-08-07"
+   }
+  ],
+  "_bucket": "duplicate_old"
+ },
+ {
+  "order_id": "ORD-10060",
+  "customer_email": "diego59@example.com",
+  "item": "Bluetooth speaker",
+  "amount": 89.0,
+  "currency": "USD",
+  "order_date": "2026-07-09",
+  "delivered_date": "2026-07-13",
+  "status": "delivered",
+  "refunded": false,
+  "charges": [
+   {
+    "charge_id": "CH-50177",
+    "amount": 89.0,
+    "date": "2026-07-09"
+   },
+   {
+    "charge_id": "CH-50178",
+    "amount": 89.0,
+    "date": "2026-07-09"
+   }
+  ],
+  "_bucket": "duplicate_old"
+ }
+]

@@ -1,0 +1,92 @@
+[
+ {
+  "id": "KB01",
+  "title": "Reset your password",
+  "keywords": "password reset forgot login email link",
+  "body": "Use 'Forgot password' on the sign-in page. The reset link expires after 30 minutes. Check spam if the email does not arrive."
+ },
+ {
+  "id": "KB02",
+  "title": "App crashes on login",
+  "keywords": "app crash login android ios open close freeze",
+  "body": "Update to the latest app version, clear the app cache, and restart the phone. Android v5.2 has a known login crash fixed in v5.2.1."
+ },
+ {
+  "id": "KB03",
+  "title": "Shipping delays",
+  "keywords": "shipping delay late package slow carrier",
+  "body": "Carriers may add 2-5 business days during peak periods. Tracking updates can lag by 24 hours."
+ },
+ {
+  "id": "KB04",
+  "title": "Two-factor codes not arriving",
+  "keywords": "2fa two factor code sms authentication verification",
+  "body": "Codes can take up to 2 minutes. Make sure the phone number is correct and try the authenticator app option."
+ },
+ {
+  "id": "KB05",
+  "title": "Payment declined",
+  "keywords": "payment declined card failed checkout error",
+  "body": "Check the card details and billing address. If the payments service is degraded, retry after 30 minutes."
+ },
+ {
+  "id": "KB06",
+  "title": "Change delivery address",
+  "keywords": "change address delivery shipping update",
+  "body": "The address can be changed while an order is processing. Once shipped, contact the carrier."
+ },
+ {
+  "id": "KB07",
+  "title": "Cancel an order",
+  "keywords": "cancel order stop purchase",
+  "body": "Orders can be cancelled while they are processing. Shipped orders must be returned after delivery."
+ },
+ {
+  "id": "KB08",
+  "title": "Refund timelines",
+  "keywords": "refund time how long money back bank",
+  "body": "Approved refunds reach the original payment method in 5-7 business days."
+ },
+ {
+  "id": "KB09",
+  "title": "Track your order",
+  "keywords": "track tracking where order status package",
+  "body": "Use the tracking link in your shipping confirmation email or the Orders page in the app."
+ },
+ {
+  "id": "KB10",
+  "title": "App not syncing",
+  "keywords": "sync data not updating app refresh offline",
+  "body": "Pull to refresh, check the internet connection, then sign out and back in to force a sync."
+ },
+ {
+  "id": "KB11",
+  "title": "Promo code not working",
+  "keywords": "promo code coupon discount invalid",
+  "body": "Promo codes are case sensitive, cannot be combined, and expire on the date shown in the offer."
+ },
+ {
+  "id": "KB12",
+  "title": "Account locked",
+  "keywords": "account locked too many attempts blocked login",
+  "body": "Accounts lock for 15 minutes after 5 failed sign-in attempts. Use password reset to unlock immediately."
+ },
+ {
+  "id": "KB13",
+  "title": "Update payment method",
+  "keywords": "update card payment method billing",
+  "body": "Go to Settings > Billing to add or replace a card. The old card is kept until the new one is verified."
+ },
+ {
+  "id": "KB14",
+  "title": "Notifications not working",
+  "keywords": "notifications push alerts not receiving",
+  "body": "Enable notifications for the app in the phone settings and make sure battery saver is not blocking them."
+ },
+ {
+  "id": "KB15",
+  "title": "Website login errors",
+  "keywords": "website login error 500 browser sign in page",
+  "body": "Clear browser cookies, try a private window, and check the service status page for login incidents."
+ }
+]
