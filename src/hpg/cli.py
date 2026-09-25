@@ -121,6 +121,21 @@ def run_experiment(cfg: dict, exp: str, split: str, limit: int | None = None, re
     out_dir = ROOT / cfg["paths"]["runs"] / f"{exp}_{split}"
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "config.snapshot.yaml").write_text(yaml.safe_dump({**cfg, "experiment": {exp: spec}}))
+    import threading
+
+    import pynvml
+
+    pynvml.nvmlInit()
+    h = pynvml.nvmlDeviceGetHandleByIndex(0)
+    peak = {"mib": 0.0}
+    stop = threading.Event()
+
+    def sample() -> None:
+        while not stop.is_set():
+            peak["mib"] = max(peak["mib"], pynvml.nvmlDeviceGetMemoryInfo(h).used / 2**20)
+            time.sleep(0.05)
+
+    threading.Thread(target=sample, daemon=True).start()
     eng = build(cfg, spec["router"], spec["device"], spec.get("finetuned", False))
     t0 = time.time()
     done = 0
@@ -132,6 +147,10 @@ def run_experiment(cfg: dict, exp: str, split: str, limit: int | None = None, re
         done += 1
         if i % 10 == 0 or i == len(tickets):
             typer.echo(f"  {exp}/{split}: {i}/{len(tickets)} ({time.time() - t0:.0f}s)")
+    stop.set()
+    vf = out_dir / "vram.json"
+    prev = json.loads(vf.read_text())["peak_used_mib"] if vf.exists() else 0
+    vf.write_text(json.dumps({"peak_used_mib": round(max(prev, peak["mib"])), "note": "whole GPU, nvml"}))
     return out_dir
 
 

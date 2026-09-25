@@ -166,6 +166,9 @@ def summarize(run_dir: Path, tickets: dict[str, dict]) -> dict[str, Any]:
         if t.review_pass_first.notna().any()
         else float("nan"),
         "errors": int(t.error.notna().sum()),
+        "peak_vram_mib": json.loads((Path(run_dir) / "vram.json").read_text())["peak_used_mib"]
+        if (Path(run_dir) / "vram.json").exists()
+        else float("nan"),
     }
     by_router = (
         d[d.node.isin(ROUTING_NODES)]

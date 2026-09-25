@@ -201,6 +201,7 @@ def write_report(cfg: dict, split: str = "test", root: Path | None = None) -> Pa
         ("  in-node tokens", "llm_tokens_nodes_per_ticket", "{:.0f}"),
         ("fallback rate (of Laya decisions)", "fallback_rate", "{:.3f}"),
         ("final_review first-pass rate", "review_first_pass_rate", "{:.3f}"),
+        ("peak VRAM (MiB, whole GPU)", "peak_vram_mib", "{:.0f}"),
         ("engine errors", "errors", "{}"),
     ]
     for r in rows:
