@@ -132,6 +132,25 @@ svg text { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
 .imgs { display: grid; grid-template-columns: 1fr; gap: 10px; }
 .imgs img { width: 100%; border-radius: 8px; border: 1px solid var(--border); background: #fff; }
 .concl li { margin-bottom: 6px; }
+table.nums { border-collapse: separate; border-spacing: 0; font-size: 13px; }
+table.nums th, table.nums td { border-bottom: 1px solid var(--grid); padding: 8px 12px; }
+table.nums thead th { background: var(--surface-1); color: var(--text-secondary); font-weight: 600;
+  vertical-align: bottom; border-bottom: 1px solid var(--axis); }
+table.nums th.ecol { text-align: right; min-width: 130px; line-height: 1.25; }
+table.nums .mcol { min-width: 230px; }
+table.nums .hint { display: block; font-size: 11px; color: var(--text-muted); }
+table.nums tr.grp td { background: var(--surface-2); color: var(--text-primary); font-weight: 600; font-size: 12px;
+  letter-spacing: .02em; padding: 6px 12px; border-bottom: 0; }
+table.nums td.ecol { text-align: right; font-variant-numeric: tabular-nums; }
+table.nums .ecol.hl { background: color-mix(in srgb, var(--accent) 7%, transparent); }
+table.nums thead th.ecol.hl { color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, var(--surface-1)); }
+table.nums .cv { white-space: nowrap; }
+table.nums .cbar { height: 4px; margin-top: 4px; background: var(--grid); border-radius: 2px; overflow: hidden; }
+table.nums .cbar i { display: block; height: 100%; float: right; background: var(--neutral-strong); border-radius: 2px; }
+table.nums td.hl .cbar i { background: var(--accent); }
+table.nums td.best .cv { font-weight: 700; }
+table.nums .star { color: var(--warn); margin-right: 4px; font-size: 11px; }
+table.nums tbody tr:not(.grp):hover td { background: var(--surface-2); }
 .heat td.cell { text-align: center; font-variant-numeric: tabular-nums; border: 2px solid var(--surface-1); border-radius: 4px; }
 @media (max-width: 1000px) { .kpis { grid-template-columns: repeat(2, 1fr); } #chat { grid-template-columns: 1fr; } .chatcol { height: auto; } .msgs { max-height: 60vh; } }
 </style>
@@ -229,7 +248,7 @@ svg text { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
       <div id="fails"></div></div>
     <div class="card concl"><h3>Conclusion</h3><ul id="concl"></ul></div>
   </div>
-  <details class="card"><summary>All numbers (table view)</summary><div id="fulltable" style="overflow:auto"></div></details>
+  <details class="card" open><summary style="font-size:15px;font-weight:600;color:var(--text-primary)">All numbers</summary><div id="fulltable" style="overflow:auto;margin-top:10px"></div></details>
 </section>
 </main>
 <div id="tip"></div>
@@ -502,13 +521,37 @@ function renderResults(R) {
     `<b>Next:</b> move final_review to the LLM or fine-tune it on real drafts; test on tickets written by someone else to measure distribution shift.`,
   ].map(s => `<li>${s}</li>`).join("");
 
-  // full table
-  const keys = [["routing_acc", "routing accuracy", 3], ["final_action_acc", "final-action accuracy", 3], ["path_exact", "path exact", 3],
-    ["guard_recall_adv", "guard recall", 3], ["guard_fpr_clean", "guard FPR", 3], ["route_p50_ms", "routing p50 ms", 0], ["route_p95_ms", "routing p95 ms", 0],
-    ["e2e_p50_ms", "e2e p50 ms", 0], ["llm_calls_per_ticket", "LLM calls/ticket", 2], ["llm_tokens_per_ticket", "LLM tokens/ticket", 0],
-    ["fallback_rate", "fallback rate", 3], ["review_first_pass_rate", "final_review first pass", 3], ["peak_vram_mib", "peak VRAM MiB", 0]];
-  $("#fulltable").innerHTML = `<table><tr><th>metric</th>${ORDER.filter(e => E[e]).map(e => `<th class="num">${e}</th>`).join("")}</tr>` +
-    keys.map(([kk, lab, d]) => `<tr><td>${lab}</td>${ORDER.filter(e => E[e]).map(e => `<td class="num">${fmt(E[e][kk], d)}</td>`).join("")}</tr>`).join("") + "</table>";
+  // full table: grouped rows, real titles, in-row bars, best value highlighted (direction-aware)
+  { const ex = ORDER.filter(e => E[e]);
+    const P = v => pct(v, 1), MS = v => Math.round(v).toLocaleString() + " ms", S = v => fmt(v / 1000, 1) + " s",
+          N2 = v => fmt(v, 2), N0 = v => Math.round(v).toLocaleString(), MIB = v => Math.round(v).toLocaleString() + " MiB";
+    const groups = [
+      ["Quality", [["routing_acc", "Routing accuracy", P, "hi"], ["decision_acc_incl_guard", "Decision accuracy incl. guard", P, "hi"],
+        ["path_exact", "Full path exactly right", P, "hi"], ["final_action_acc", "Correct final action", P, "hi"],
+        ["review_first_pass_rate", "Reply review passed first time", P, "hi"]]],
+      ["Safety (guard)", [["guard_recall_adv", "Attacks caught (recall)", P, "hi"], ["guard_fpr_clean", "Clean tickets wrongly flagged", P, "lo"]]],
+      ["Speed", [["route_p50_ms", "Routing step, p50", MS, "lo"], ["route_p95_ms", "Routing step, p95", MS, "lo"],
+        ["e2e_p50_ms", "Whole ticket, p50", S, "lo"], ["e2e_p95_ms", "Whole ticket, p95", S, "lo"]]],
+      ["LLM cost per ticket", [["llm_calls_per_ticket", "LLM calls", N2, "lo"], ["llm_calls_routing_per_ticket", "… of which for routing", N2, "lo"],
+        ["llm_tokens_per_ticket", "LLM tokens", N0, "lo"], ["llm_tokens_routing_per_ticket", "… of which for routing", N0, "lo"]]],
+      ["System 1 ↔ System 2 handoff", [["fallback_rate", "Laya decisions handed to the LLM", P, null]]],
+      ["Resources", [["peak_vram_mib", "Peak GPU memory (of 8,188 MiB)", MIB, null], ["errors", "Engine errors", N0, "lo"]]],
+    ];
+    let h = `<table class="nums"><thead><tr><th class="mcol">Metric</th>` +
+      ex.map(e => `<th class="ecol${e === HL ? " hl" : ""}">${esc(R.labels[e])}</th>`).join("") + `</tr></thead><tbody>`;
+    for (const [g, rows] of groups) {
+      h += `<tr class="grp"><td colspan="${ex.length + 1}">${g}</td></tr>`;
+      for (const [kk, lab, f, better] of rows) {
+        const vals = ex.map(e => E[e][kk]); const ok = vals.filter(v => v !== null && v !== undefined && !Number.isNaN(v));
+        const mx = Math.max(...ok, 1e-9); const best = better === "hi" ? Math.max(...ok) : better === "lo" ? Math.min(...ok) : null;
+        const hint = better === "hi" ? "higher is better" : better === "lo" ? "lower is better" : "";
+        h += `<tr><td class="mcol">${lab}${hint ? `<span class="hint">${hint}</span>` : ""}</td>` + ex.map((e, j) => { const v = vals[j];
+          if (v === null || v === undefined || Number.isNaN(v)) return `<td class="ecol${e === HL ? " hl" : ""}"><span class="muted">–</span></td>`;
+          const isBest = best !== null && ok.length > 1 && f(v) === f(best) && !ok.every(x => f(x) === f(best));  // ties at shown precision share the star
+          return `<td class="ecol${e === HL ? " hl" : ""}${isBest ? " best" : ""}" title="${esc(R.labels[e])}: ${f(v)}">
+            <div class="cv">${isBest ? '<span class="star" aria-label="best">★</span>' : ""}${f(v)}</div>
+            <div class="cbar"><i style="width:${Math.max(2, 100 * v / mx)}%"></i></div></td>`; }).join("") + `</tr>`; } }
+    $("#fulltable").innerHTML = h + `</tbody></table><div class="small muted" style="margin-top:8px">★ best in row · bars scale within each row · test split, 150 tickets per experiment</div>`; }
 }
 if (location.hash === "#results") tab("results");
 </script>
