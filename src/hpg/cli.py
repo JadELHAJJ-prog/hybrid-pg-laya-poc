@@ -257,5 +257,13 @@ def calibrate(
         calibration_report(cfg, ROOT, split, candidates={"finetuned": cfg["laya"]["finetuned"]}, tag="_finetuned")
 
 
+@app.command()
+def serve(host: str = typer.Option("127.0.0.1"), port: int = typer.Option(8000)) -> None:
+    """Web UI: chatbot running the hybrid agent + PoC results dashboard (models load on first message)."""
+    import uvicorn
+
+    uvicorn.run("hpg.web.server:app", host=host, port=port, log_level="warning")
+
+
 if __name__ == "__main__":
     app()

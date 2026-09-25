@@ -31,6 +31,15 @@ uv run hpg eval --all                                    # Phase 6: E1-E4 on tes
 
 Traces are written to `runs/<experiment>/<ticket_id>.jsonl`, one JSON line per step. Each step records the node, the router that decided it (`deterministic | laya | llm | llm_fallback`), probabilities, confidence, latency, and LLM tokens. Metrics are computed from these traces only.
 
+## Web UI
+
+```bash
+uv run hpg serve            # http://127.0.0.1:8000
+```
+
+- **Chat:** each message is one support ticket, run by the hybrid agent with the fine-tuned Laya by default (E3 zero-shot and LLM-only are selectable). The Procedural Graph lights up live, and every step shows who decided it (System 1 Laya / System 2 LLM), with confidence, latency, tool results and LLM tokens. Models load on the first message; **Unload models** frees the GPU.
+- **PoC results:** KPIs, E1–E5 accuracy / latency / LLM cost / fallback charts, per-node accuracy, calibration, and the failure breakdown, computed from `reports/` and the test traces.
+
 ## Layout
 
 | path | what |
@@ -41,6 +50,7 @@ Traces are written to `runs/<experiment>/<ticket_id>.jsonl`, one JSON line per s
 | `src/hpg/routers/` | `LLMRouter`, `LayaRouter`, `HybridRouter` behind one interface |
 | `src/hpg/llm_nodes.py` | LLM nodes with PG guidance injection; tool loop for technical tickets |
 | `src/hpg/eval/` | trace metrics, calibration (Phase 5), reports |
+| `src/hpg/web/` | FastAPI server + single-page UI (chatbot and results dashboard) |
 | `scripts/` | world / ticket / fine-tune data generators, dataset validator, VRAM probe |
 | `notebooks/refunddesk_finetune_2xT4_kaggle.ipynb` | Phase 7 fine-tune on free Kaggle 2×T4 |
 | `.claude/` | Claude Code agents, skills, and hooks used to build this repo |

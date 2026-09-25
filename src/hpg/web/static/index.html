@@ -1,0 +1,511 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RefundDesk · Hybrid PG agent</title>
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7; --surface-1: #fcfcfb; --surface-2: #f2f1ed;
+  --text-primary: #0b0b0b; --text-secondary: #52514e; --text-muted: #898781;
+  --grid: #e1e0d9; --axis: #c3c2b7; --border: rgba(11,11,11,0.10);
+  --accent: #2a78d6; --accent-soft: #cde2fb; --routing: #eb6834; --neutral: #c3c2b7; --neutral-strong: #898781;
+  --s1: #2a78d6; --s2: #eb6834; --tool: #898781; --llmnode: #4a3aa7;
+  --good: #006300; --bad: #d03b3b; --warn: #b07a00;
+  --seq-100: #cde2fb; --seq-250: #86b6ef; --seq-400: #3987e5; --seq-550: #1c5cab; --seq-700: #0d366b;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface-1: #1a1a19; --surface-2: #242422;
+    --text-primary: #ffffff; --text-secondary: #c3c2b7; --text-muted: #898781;
+    --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10);
+    --accent: #3987e5; --accent-soft: #184f95; --routing: #d95926; --neutral: #4a4a47; --neutral-strong: #898781;
+    --s1: #3987e5; --s2: #d95926; --tool: #898781; --llmnode: #9085e9;
+    --good: #0ca30c; --bad: #e66767; --warn: #eda100;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d; --surface-1: #1a1a19; --surface-2: #242422;
+  --text-primary: #ffffff; --text-secondary: #c3c2b7; --text-muted: #898781;
+  --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10);
+  --accent: #3987e5; --accent-soft: #184f95; --routing: #d95926; --neutral: #4a4a47; --neutral-strong: #898781;
+  --s1: #3987e5; --s2: #d95926; --tool: #898781; --llmnode: #9085e9;
+  --good: #0ca30c; --bad: #e66767; --warn: #eda100;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--text-primary);
+  font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+header { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 16px;
+  padding: 10px 20px; background: var(--surface-1); border-bottom: 1px solid var(--border); }
+header h1 { font-size: 15px; margin: 0; font-weight: 600; }
+header .sub { color: var(--text-muted); font-size: 12px; }
+nav { display: flex; gap: 4px; margin-left: 12px; }
+nav button { border: 0; background: transparent; color: var(--text-secondary); padding: 6px 12px; border-radius: 8px;
+  font: inherit; cursor: pointer; }
+nav button.on { background: var(--surface-2); color: var(--text-primary); font-weight: 600; }
+.spacer { flex: 1; }
+.pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary);
+  border: 1px solid var(--border); padding: 4px 10px; border-radius: 999px; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--neutral-strong); }
+.dot.on { background: var(--good); }
+button.ghost { border: 1px solid var(--border); background: var(--surface-1); color: var(--text-primary);
+  padding: 5px 10px; border-radius: 8px; font: inherit; font-size: 12px; cursor: pointer; }
+button.ghost:hover { background: var(--surface-2); }
+main { padding: 18px 20px 40px; max-width: 1500px; margin: 0 auto; }
+.hidden { display: none !important; }
+.card { background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+h2 { font-size: 15px; margin: 0 0 4px; font-weight: 600; }
+h3 { font-size: 13px; margin: 0 0 2px; font-weight: 600; }
+.muted { color: var(--text-muted); } .secondary { color: var(--text-secondary); }
+.small { font-size: 12px; }
+
+/* ---------------- chat */
+#chat { display: grid; grid-template-columns: minmax(360px, 5fr) 7fr; gap: 16px; align-items: start; }
+.chatcol { display: flex; flex-direction: column; height: calc(100vh - 110px); }
+.msgs { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding: 4px 2px 12px; }
+.msg { max-width: 88%; padding: 10px 12px; border-radius: 12px; white-space: pre-wrap; }
+.msg.user { align-self: flex-end; background: var(--accent); color: #fff; border-bottom-right-radius: 4px; }
+.msg.agent { align-self: flex-start; background: var(--surface-2); border-bottom-left-radius: 4px; }
+.msg.sys { align-self: center; color: var(--text-muted); font-size: 12px; background: transparent; padding: 2px; }
+.msg .meta { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); color: var(--text-secondary);
+  background: var(--surface-1); white-space: nowrap; }
+.chip b { color: var(--text-primary); font-weight: 600; }
+.examples { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.examples button { font-size: 12px; }
+.composer { display: flex; gap: 8px; margin-top: 8px; }
+.composer textarea { flex: 1; resize: none; height: 64px; padding: 10px; border-radius: 10px; border: 1px solid var(--border);
+  background: var(--surface-1); color: var(--text-primary); font: inherit; }
+.composer button { border: 0; border-radius: 10px; padding: 0 18px; background: var(--accent); color: #fff; font: inherit;
+  font-weight: 600; cursor: pointer; }
+.composer button:disabled { opacity: .5; cursor: default; }
+select { font: inherit; font-size: 12px; padding: 4px 8px; border-radius: 8px; border: 1px solid var(--border);
+  background: var(--surface-1); color: var(--text-primary); }
+.row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--text-secondary); }
+.key { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
+#graphsvg { width: 100%; height: auto; display: block; }
+.gnode rect { fill: var(--surface-1); stroke: var(--axis); stroke-width: 1; }
+.gnode text { font-size: 11px; fill: var(--text-secondary); }
+.gnode.visited rect { stroke-width: 2; }
+.gnode.visited text { fill: var(--text-primary); font-weight: 600; }
+.gnode.current rect { stroke-dasharray: 4 3; animation: pulse 1s linear infinite; }
+@keyframes pulse { to { stroke-dashoffset: -14; } }
+.gedge { fill: none; stroke: var(--grid); stroke-width: 1.2; }
+.gedge.taken { stroke-width: 2.5; }
+.steps { margin-top: 10px; max-height: calc(100vh - 560px); min-height: 160px; overflow-y: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 12px; }
+th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--grid); vertical-align: top; }
+th { color: var(--text-muted); font-weight: 500; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.badge { font-size: 11px; padding: 1px 7px; border-radius: 6px; color: #fff; white-space: nowrap; }
+.confbar { display: inline-block; width: 60px; height: 6px; background: var(--grid); border-radius: 3px; vertical-align: middle;
+  margin-right: 6px; overflow: hidden; }
+.confbar i { display: block; height: 100%; background: var(--accent); }
+details summary { cursor: pointer; color: var(--text-secondary); font-size: 12px; }
+
+/* ---------------- results */
+.kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 12px 0 16px; }
+.kpi .label { font-size: 12px; color: var(--text-secondary); }
+.kpi .value { font-size: 26px; font-weight: 600; margin: 2px 0; }
+.kpi .delta { font-size: 12px; color: var(--text-secondary); }
+.delta.good { color: var(--good); } .delta.bad { color: var(--bad); }
+.hero { display: flex; gap: 24px; align-items: flex-end; flex-wrap: wrap; }
+.hero .big { font-size: 52px; font-weight: 600; line-height: 1; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(440px, 1fr)); gap: 16px; margin-bottom: 16px; }
+.grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-bottom: 16px; }
+svg text { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; }
+.axis text { fill: var(--text-muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.lbl { fill: var(--text-secondary); font-size: 12px; }
+.val { fill: var(--text-primary); font-size: 11px; font-variant-numeric: tabular-nums; }
+.gridline { stroke: var(--grid); stroke-width: 1; }
+.baseline { stroke: var(--axis); stroke-width: 1; }
+.hit { fill: transparent; cursor: default; }
+#tip { position: fixed; pointer-events: none; z-index: 20; background: var(--surface-1); color: var(--text-primary);
+  border: 1px solid var(--border); border-radius: 8px; padding: 6px 9px; font-size: 12px; box-shadow: 0 4px 16px rgba(0,0,0,.12);
+  display: none; max-width: 320px; }
+#tip .t { font-weight: 600; margin-bottom: 2px; }
+.imgs { display: grid; grid-template-columns: 1fr; gap: 10px; }
+.imgs img { width: 100%; border-radius: 8px; border: 1px solid var(--border); background: #fff; }
+.concl li { margin-bottom: 6px; }
+.heat td.cell { text-align: center; font-variant-numeric: tabular-nums; border: 2px solid var(--surface-1); border-radius: 4px; }
+@media (max-width: 1000px) { .kpis { grid-template-columns: repeat(2, 1fr); } #chat { grid-template-columns: 1fr; } .chatcol { height: auto; } .msgs { max-height: 60vh; } }
+</style>
+</head>
+<body>
+<header>
+  <div><h1>RefundDesk · Hybrid System-1 / System-2 agent</h1>
+  <div class="sub">Procedural Graph routed by Laya (System 1), local Qwen3.5-9B (System 2) only where needed</div></div>
+  <nav><button id="tab-chat" class="on">Chat</button><button id="tab-results">PoC results</button></nav>
+  <div class="spacer"></div>
+  <span class="pill"><span id="st-dot" class="dot"></span><span id="st-text">models not loaded</span></span>
+  <span class="pill" id="st-vram">GPU –</span>
+  <button class="ghost" id="unload" title="Unload Laya and the LLM to free GPU memory">Unload models</button>
+  <button class="ghost" id="theme" title="Toggle light/dark">◐</button>
+</header>
+<main>
+<!-- ============================ CHAT ============================ -->
+<section id="chat">
+  <div class="card chatcol">
+    <div class="row" style="justify-content:space-between">
+      <h2>Customer chat</h2>
+      <label class="small secondary">Agent <select id="mode"></select></label>
+    </div>
+    <div class="examples" id="examples"></div>
+    <div class="msgs" id="msgs">
+      <div class="msg sys">Each message is one support ticket. The first message loads the models (~20–60 s).</div>
+    </div>
+    <details><summary>Known orders (ORD-10001 … ORD-10060)</summary><div id="orders" style="max-height:180px;overflow:auto"></div></details>
+    <div class="composer">
+      <textarea id="input" placeholder="e.g. I was charged twice for ORD-10031, please fix it."></textarea>
+      <button id="send">Send</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="row" style="justify-content:space-between">
+      <h2>Live execution on the Procedural Graph</h2>
+      <div class="legend">
+        <span><i class="key" style="background:var(--s1)"></i>System 1 · Laya decided</span>
+        <span><i class="key" style="background:var(--s2)"></i>System 2 · LLM decided</span>
+        <span><i class="key" style="background:var(--llmnode)"></i>LLM node (generation / tools)</span>
+        <span><i class="key" style="background:var(--tool)"></i>Tool / fixed step</span>
+      </div>
+    </div>
+    <svg id="graphsvg" viewBox="0 0 1020 430" role="img" aria-label="Procedural graph"></svg>
+    <div class="steps"><table id="steps"><thead><tr><th>#</th><th>Node</th><th>Decided by</th><th>Outcome</th>
+      <th>Confidence</th><th class="num">Time</th></tr></thead><tbody></tbody></table></div>
+  </div>
+</section>
+
+<!-- ============================ RESULTS ============================ -->
+<section id="results" class="hidden">
+  <div class="card">
+    <div class="hero">
+      <div><div class="secondary small">Routing step latency, fine-tuned hybrid (E5) vs LLM-only (E1), p50</div>
+        <div class="big" id="hero-num">–</div></div>
+      <div class="secondary" id="hero-text" style="max-width:720px"></div>
+    </div>
+    <div class="kpis" id="kpis"></div>
+    <div class="small muted" id="setup"></div>
+  </div>
+  <h2 style="margin:18px 0 8px">Quality</h2>
+  <div class="grid3" id="acc-charts"></div>
+  <h2 style="margin:18px 0 8px">Cost & speed</h2>
+  <div class="grid2">
+    <div class="card"><h3>Routing latency per decision (log scale)</h3><div class="small muted">dot = p50, whisker to p95 · ms</div>
+      <div id="lat"></div></div>
+    <div class="card"><h3>LLM tokens per ticket</h3><div class="legend" style="margin:4px 0">
+      <span><i class="key" style="background:var(--routing)"></i>used for routing</span>
+      <span><i class="key" style="background:var(--neutral)"></i>used inside LLM nodes (replies, tools)</span></div>
+      <div id="tok"></div></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><h3>LLM calls per ticket</h3><div class="small muted">lower is cheaper</div><div id="calls"></div></div>
+    <div class="card"><h3>Fallback rate: share of Laya decisions handed to the LLM</h3>
+      <div class="small muted">only hybrid experiments fall back</div><div id="fb"></div></div>
+  </div>
+  <div class="grid2">
+    <div class="card"><h3>End-to-end time per ticket (p50)</h3><div class="small muted">seconds, includes LLM reply generation</div><div id="e2e"></div></div>
+    <div class="card"><h3>Routing accuracy by decision node</h3><div class="small muted">test split, decisions on the gold prefix</div>
+      <div id="heat"></div></div>
+  </div>
+  <h2 style="margin:18px 0 8px">Calibration: can we gate on Laya's confidence?</h2>
+  <div class="grid2">
+    <div class="card"><h3>Expected calibration error (dev, lower is better)</h3>
+      <div class="legend" style="margin:4px 0"><span class="secondary">bars per checkpoint: raw · shipped temperatures · temperatures fitted on dev (5-fold CV)</span></div>
+      <div id="ece"></div>
+      <div class="small secondary" id="ece-test" style="margin-top:8px"></div></div>
+    <div class="card"><h3>Dev plots</h3><div class="imgs">
+      <img src="/reports/tau_sweep_dev.png" alt="accuracy and coverage vs tau on dev">
+      <img src="/reports/reliability_dev.png" alt="reliability diagrams on dev"></div></div>
+  </div>
+  <h2 style="margin:18px 0 8px">Where it fails</h2>
+  <div class="grid2">
+    <div class="card"><h3>Wrong final actions by first wrong decision</h3><div class="small muted">test split, 150 tickets per experiment</div>
+      <div id="fails"></div></div>
+    <div class="card concl"><h3>Conclusion</h3><ul id="concl"></ul></div>
+  </div>
+  <details class="card"><summary>All numbers (table view)</summary><div id="fulltable" style="overflow:auto"></div></details>
+</section>
+</main>
+<div id="tip"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const fmt = (v, d = 1) => (v === null || v === undefined || Number.isNaN(v)) ? "–" : Number(v).toFixed(d);
+const pct = (v, d = 1) => (v === null || v === undefined || Number.isNaN(v)) ? "–" : (100 * v).toFixed(d) + "%";
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const SVGNS = "http://www.w3.org/2000/svg";
+function el(tag, attrs = {}, parent) { const e = document.createElementNS(SVGNS, tag);
+  for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v); if (parent) parent.appendChild(e); return e; }
+
+// ------------------------------------------------ tooltip
+const tip = $("#tip");
+function showTip(ev, title, lines) { tip.innerHTML = `<div class="t">${esc(title)}</div>` + lines.map(l => `<div>${l}</div>`).join("");
+  tip.style.display = "block"; const x = Math.min(ev.clientX + 14, innerWidth - tip.offsetWidth - 8);
+  tip.style.left = x + "px"; tip.style.top = (ev.clientY + 14) + "px"; }
+function hideTip() { tip.style.display = "none"; }
+
+// ------------------------------------------------ tabs, theme, status
+function tab(name) { $("#chat").classList.toggle("hidden", name !== "chat"); $("#results").classList.toggle("hidden", name !== "results");
+  $("#tab-chat").classList.toggle("on", name === "chat"); $("#tab-results").classList.toggle("on", name === "results");
+  if (name === "results") loadResults(); }
+$("#tab-chat").onclick = () => { history.replaceState(null, "", "#chat"); tab("chat"); };
+$("#tab-results").onclick = () => { history.replaceState(null, "", "#results"); tab("results"); };
+$("#theme").onclick = () => { const r = document.documentElement; const dark = r.dataset.theme ? r.dataset.theme === "dark"
+  : matchMedia("(prefers-color-scheme: dark)").matches; r.dataset.theme = dark ? "light" : "dark";
+  if (RES) renderResults(RES); drawGraph(); };
+let MODES = {};
+async function refreshStatus() {
+  try { const s = await (await fetch("/api/status")).json(); MODES = s.modes;
+    if (!$("#mode").options.length) { for (const [k, v] of Object.entries(s.modes)) $("#mode").add(new Option(v, k)); }
+    $("#st-dot").classList.toggle("on", !!s.loaded);
+    $("#st-text").textContent = s.busy ? "agent working…" : (s.loaded ? "loaded: " + s.modes[s.loaded] : "models not loaded");
+    if (s.vram) $("#st-vram").textContent = `GPU ${s.vram.used_mib.toLocaleString()} / ${s.vram.total_mib.toLocaleString()} MiB`;
+  } catch (e) { $("#st-text").textContent = "server offline"; }
+}
+$("#unload").onclick = async () => { $("#st-text").textContent = "unloading…";
+  const r = await fetch("/api/unload", {method: "POST"}); if (!r.ok) alert((await r.json()).detail); refreshStatus(); };
+setInterval(refreshStatus, 4000); refreshStatus();
+
+// ------------------------------------------------ procedural graph drawing
+const POS = { intake: [60, 200], guard: [180, 200], classify: [300, 200], lookup_order: [430, 90],
+  lookup_order_delivery: [430, 250], investigate_technical: [430, 330], policy_check: [560, 60], ask_for_info: [560, 170],
+  refund_duplicate: [690, 20], refund_standard: [690, 65], deny_with_alternative: [690, 110], draft_reply: [820, 200],
+  final_review: [820, 290], escalate_human: [560, 400], END: [945, 290] };
+const NW = 116, NH = 26;
+let GRAPH = null, TAKEN = {}, VISITED = new Set(), CURRENT = null;
+async function loadGraph() { GRAPH = await (await fetch("/api/graph")).json(); drawGraph(); }
+function edgePath(a, b) { const [x1, y1] = POS[a], [x2, y2] = POS[b];
+  if (a === "final_review" && b === "draft_reply") return `M${x1 + NW / 2},${y1} C${x1 + NW / 2 + 40},${y1} ${x2 + NW / 2 + 40},${y2} ${x2 + NW / 2},${y2}`;
+  const sx = x1 + NW / 2, ex = x2 - NW / 2; if (ex < sx) { return `M${x1},${y1 + NH / 2} C${x1},${y1 + 60} ${x2},${y2 - 60} ${x2},${y2 - NH / 2}`; }
+  const mx = (sx + ex) / 2; return `M${sx},${y1} C${mx},${y1} ${mx},${y2} ${ex},${y2}`; }
+function drawGraph() { const svg = $("#graphsvg"); if (!GRAPH) return; svg.innerHTML = "";
+  el("defs", {}, svg).innerHTML = `<marker id="arr" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L8,4 L0,8 z" fill="${css('--axis')}"/></marker>`;
+  for (const e of GRAPH.edges) { const key = e.source + ">" + e.target; const t = TAKEN[key];
+    const p = el("path", {d: edgePath(e.source, e.target), class: "gedge" + (t ? " taken" : ""), "marker-end": "url(#arr)"}, svg);
+    if (t) p.style.stroke = t; }
+  for (const n of GRAPH.nodes) { const [x, y] = POS[n.id] || [0, 0];
+    const g = el("g", {class: "gnode" + (VISITED.has(n.id) ? " visited" : "") + (CURRENT === n.id ? " current" : ""), transform: `translate(${x - NW / 2},${y - NH / 2})`}, svg);
+    const r = el("rect", {width: NW, height: NH, rx: 7}, g);
+    const kind = n.executor === "llm" ? css("--llmnode") : (n.executor === "tool" ? css("--tool") : css("--axis"));
+    if (VISITED.has(n.id)) r.style.stroke = kind === css("--axis") ? css("--text-secondary") : kind;
+    el("rect", {width: 4, height: NH - 10, x: 5, y: 5, rx: 2, fill: kind}, g);
+    const t = el("text", {x: 14, y: NH / 2 + 4}, g); t.textContent = n.id;
+    g.addEventListener("mousemove", ev => showTip(ev, n.id, [esc(n.description), `<span class="muted">executor: ${n.executor}</span>`]));
+    g.addEventListener("mouseleave", hideTip); }
+}
+loadGraph();
+
+// ------------------------------------------------ chat
+fetch("/api/examples").then(r => r.json()).then(d => {
+  for (const ex of d.examples) { const b = document.createElement("button"); b.className = "ghost"; b.textContent = ex.label;
+    b.title = ex.text; b.onclick = () => { $("#input").value = ex.text; $("#input").focus(); }; $("#examples").appendChild(b); }
+  $("#orders").innerHTML = "<table><tr><th>Order</th><th>Item</th><th>Status</th><th>Policy bucket</th></tr>" +
+    d.orders.map(o => `<tr><td>${o.order_id}</td><td>${esc(o.item)}</td><td>${o.status}</td><td class="muted">${o.bucket}</td></tr>`).join("") + "</table>";
+});
+function addMsg(cls, html) { const m = document.createElement("div"); m.className = "msg " + cls; m.innerHTML = html;
+  $("#msgs").appendChild(m); $("#msgs").scrollTop = 1e9; return m; }
+const LAYER = { laya: ["System 1 · Laya", "--s1"], llm: ["System 2 · LLM", "--s2"], llm_fallback: ["System 2 · LLM (fallback)", "--s2"],
+  deterministic: ["fixed edge", "--tool"] };
+function stepRow(i, r) {
+  const tb = $("#steps tbody"); const tr = document.createElement("tr");
+  let who, color, outcome = "", conf = "", ms = r.ms ?? r.latency_ms ?? 0;
+  if (r.type === "route") { [who, color] = LAYER[r.router] || [r.router, "--tool"]; outcome = "→ " + r.target;
+    if (r.router === "llm_fallback") outcome += ` <span class="muted">(Laya said ${esc(r.laya_target)} @ ${fmt(r.laya_confidence, 2)} &lt; τ)</span>`;
+    if (r.note) outcome += ` <span class="muted">(${esc(r.note)})</span>`;
+    if (r.router !== "deterministic") { const c = r.answer_confidence ?? r.confidence; conf = `<span class="confbar"><i style="width:${100 * c}%;background:var(${color})"></i></span>${fmt(c, 2)}`; } }
+  else if (r.type === "llm_node") { who = "LLM node"; color = "--llmnode";
+    outcome = `${r.llm_calls} call(s), ${(r.llm_prompt_tokens || 0) + (r.llm_completion_tokens || 0)} tokens` + (r.tool_calls?.length ? ` · tools: ${r.tool_calls.map(t => t.tool).join(", ")}` : ""); }
+  else { who = r.executor === "tool" ? "tool " + (r.tool || "") : r.executor; color = "--tool";
+    outcome = r.output ? `<span class="muted">${esc(JSON.stringify(r.output).slice(0, 90))}</span>` : ""; }
+  tr.innerHTML = `<td class="muted">${i}</td><td>${r.node}</td><td><span class="badge" style="background:var(${color})">${who}</span></td>
+    <td>${outcome}</td><td>${conf}</td><td class="num">${ms >= 1000 ? fmt(ms / 1000, 1) + " s" : Math.round(ms) + " ms"}</td>`;
+  tb.appendChild(tr); tr.scrollIntoView({block: "nearest"});
+}
+async function send() {
+  const text = $("#input").value.trim(); if (!text) return;
+  $("#send").disabled = true; $("#input").value = ""; addMsg("user", esc(text));
+  $("#steps tbody").innerHTML = ""; TAKEN = {}; VISITED = new Set(); CURRENT = null; drawGraph();
+  const pending = addMsg("agent", '<span class="muted">working…</span>');
+  let i = 0, stats = {s1: 0, s2: 0, llmcalls: 0, tokens: 0}, t0 = performance.now();
+  try {
+    const resp = await fetch("/api/chat", {method: "POST", headers: {"content-type": "application/json"},
+      body: JSON.stringify({text, mode: $("#mode").value})});
+    if (!resp.ok) { pending.innerHTML = esc((await resp.json()).detail); $("#send").disabled = false; return; }
+    const reader = resp.body.getReader(), dec = new TextDecoder(); let buf = "";
+    while (true) { const {done, value} = await reader.read(); if (done) break; buf += dec.decode(value, {stream: true});
+      let nl; while ((nl = buf.indexOf("\n")) >= 0) { const line = buf.slice(0, nl); buf = buf.slice(nl + 1); if (!line.trim()) continue;
+        const r = JSON.parse(line);
+        if (r.type === "status") { addMsg("sys", esc(r.message)); refreshStatus(); continue; }
+        if (r.type === "error") { pending.innerHTML = `<span style="color:var(--bad)">${esc(r.message)}</span>`; continue; }
+        if (r.type === "final") { const acts = (r.ledger || []).map(a => a.action === "refund" ? `refund $${a.amount} (${a.reason})` : "escalated to a human");
+          const secs = ((performance.now() - t0) / 1000).toFixed(1);
+          pending.innerHTML = esc(r.reply || (acts.includes("escalated to a human") ? "Your ticket has been passed to a human agent, who will get back to you shortly." : "(no reply)")) +
+            `<div class="meta"><span class="chip">actions: <b>${acts.length ? esc(acts.join(", ")) : "none"}</b></span>
+             <span class="chip"><b>${stats.s1}</b> Laya decisions</span><span class="chip"><b>${stats.s2}</b> LLM decisions</span>
+             <span class="chip"><b>${stats.llmcalls}</b> LLM calls · <b>${stats.tokens}</b> tokens</span><span class="chip"><b>${secs}</b> s</span>
+             <span class="chip" title="${esc(r.trace)}">${r.path.length} steps</span></div>`;
+          CURRENT = null; drawGraph(); continue; }
+        if (r.type === "end") continue;
+        const noise = (r.type === "route" && r.router === "deterministic") || (r.type === "node" && r.executor !== "tool");
+        if (!noise) { i++; stepRow(i, r); }
+        if (r.type === "node" || r.type === "llm_node") { VISITED.add(r.node); CURRENT = r.node;
+          if (r.type === "llm_node") { stats.llmcalls += r.llm_calls || 0; stats.tokens += (r.llm_prompt_tokens || 0) + (r.llm_completion_tokens || 0); } }
+        if (r.type === "route") { const c = r.router === "laya" ? css("--s1") : (r.router.startsWith("llm") ? css("--s2") : css("--tool"));
+          TAKEN[r.node + ">" + r.chosen_edge] = c; if (r.target !== r.chosen_edge) TAKEN[r.node + ">" + r.target] = c;
+          if (r.router === "laya") stats.s1++; if (r.router.startsWith("llm")) { stats.s2++; stats.llmcalls++; stats.tokens += (r.llm_prompt_tokens || 0) + (r.llm_completion_tokens || 0); }
+          VISITED.add(r.target); CURRENT = r.target; }
+        drawGraph(); } }
+  } catch (e) { pending.innerHTML = `<span style="color:var(--bad)">${esc(e)}</span>`; }
+  $("#send").disabled = false; refreshStatus();
+}
+$("#send").onclick = send;
+$("#input").addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } });
+
+// ------------------------------------------------ results charts
+let RES = null;
+async function loadResults() { if (!RES) RES = await (await fetch("/api/results")).json(); renderResults(RES); }
+const ORDER = ["E1", "E2", "E3", "E4", "E5"];
+const HL = "E5";
+const SHORT = {E1: "E1 · LLM only", E2: "E2 · Laya only", E3: "E3 · Hybrid (zero-shot)", E4: "E4 · Hybrid, Laya CPU", E5: "E5 · Hybrid (fine-tuned)"};
+function hbar(container, rows, {max = 1, fmtv = v => pct(v), title = "", unit = "", tipExtra = () => [], left = 160} = {}) {
+  const W = 460, rowH = 30, right = 56, top = 6, H = top + rows.length * rowH + 18;
+  const svg = el("svg", {viewBox: `0 0 ${W} ${H}`, width: "100%", role: "img", "aria-label": title});
+  const x = v => left + (W - left - right) * Math.max(0, v) / max;
+  const ax = el("g", {class: "axis"}, svg);
+  for (let k = 0; k <= 4; k++) { const v = max * k / 4, xx = x(v);
+    el("line", {x1: xx, x2: xx, y1: top, y2: H - 16, class: k ? "gridline" : "baseline"}, ax);
+    const t = el("text", {x: xx, y: H - 3, "text-anchor": "middle"}, ax); t.textContent = fmtv(v); }
+  rows.forEach((r, i) => { const y = top + i * rowH + 5, h = Math.min(20, rowH - 10);
+    const lab = el("text", {x: left - 8, y: y + h / 2 + 4, "text-anchor": "end", class: "lbl"}, svg); lab.textContent = r.label;
+    if (r.v === null || r.v === undefined || Number.isNaN(r.v)) { const t = el("text", {x: left + 4, y: y + h / 2 + 4, class: "val"}, svg); t.textContent = "n/a"; return; }
+    const w = Math.max(2, x(r.v) - left);
+    el("path", {d: `M${left},${y} h${w - 4} a4,4 0 0 1 4,4 v${h - 8} a4,4 0 0 1 -4,4 h${-(w - 4)} z`,
+      fill: r.id === HL ? css("--accent") : css("--neutral")}, svg);
+    const t = el("text", {x: left + w + 6, y: y + h / 2 + 4, class: "val"}, svg); t.textContent = fmtv(r.v) + unit;
+    const hit = el("rect", {x: 0, y: y - 4, width: W, height: rowH, class: "hit"}, svg);
+    hit.addEventListener("mousemove", ev => showTip(ev, `${r.id} · ${RES.labels[r.id]}`, [`${title}: <b>${fmtv(r.v)}${unit}</b>`, ...tipExtra(r)]));
+    hit.addEventListener("mouseleave", hideTip); });
+  container.innerHTML = ""; container.appendChild(svg);
+}
+const rowsFor = (key, E) => ORDER.filter(e => E[e]).map(e => ({id: e, label: SHORT[e], v: E[e][key]}));
+
+function renderResults(R) {
+  const E = R.experiments; const e1 = E.E1, e5 = E.E5 || E.E3;
+  $("#hero-num").innerHTML = `${Math.round(e5.route_p50_ms)} ms <span class="secondary" style="font-size:22px">vs ${Math.round(e1.route_p50_ms).toLocaleString()} ms</span>`;
+  $("#hero-text").innerHTML = `With a Laya checkpoint fine-tuned for free on 2,013 templated decisions, the hybrid agent matches LLM-only routing accuracy
+    (${fmt(e5.routing_acc, 3)} vs ${fmt(e1.routing_acc, 3)}) while making ${pct(1 - e5.llm_calls_per_ticket / e1.llm_calls_per_ticket, 0)} fewer LLM calls.
+    Zero-shot Laya (E3) is not enough: routing accuracy drops to ${fmt(E.E3.routing_acc, 3)} and 41% of decisions still fall back to the LLM.`;
+  const k = [
+    ["Routing accuracy", fmt(e5.routing_acc, 3), `LLM-only ${fmt(e1.routing_acc, 3)}`, Math.abs(e5.routing_acc - e1.routing_acc) < 0.005 ? "good" : "bad"],
+    ["Correct final action", pct(e5.final_action_acc), `${fmt(100 * (e5.final_action_acc - e1.final_action_acc), 1)} pts vs LLM-only`, e5.final_action_acc >= e1.final_action_acc ? "good" : "bad"],
+    ["LLM calls / ticket", fmt(e5.llm_calls_per_ticket, 2), `−${pct(1 - e5.llm_calls_per_ticket / e1.llm_calls_per_ticket, 0)} vs ${fmt(e1.llm_calls_per_ticket, 2)}`, "good"],
+    ["LLM tokens / ticket", Math.round(e5.llm_tokens_per_ticket).toLocaleString(), `−${pct(1 - e5.llm_tokens_per_ticket / e1.llm_tokens_per_ticket, 0)} vs ${Math.round(e1.llm_tokens_per_ticket).toLocaleString()}`, "good"],
+    ["Ticket time p50", fmt(e5.e2e_p50_ms / 1000, 1) + " s", `vs ${fmt(e1.e2e_p50_ms / 1000, 1)} s LLM-only`, "good"],
+    ["Fallback to LLM", pct(e5.fallback_rate), `zero-shot hybrid: ${pct(E.E3.fallback_rate)}`, "good"],
+    ["Guard: attacks caught", pct(e5.guard_recall_adv, 0), `false flags ${pct(e5.guard_fpr_clean, 1)}`, "good"],
+    ["Peak VRAM", Math.round(e5.peak_vram_mib).toLocaleString() + " MiB", "of 8,188 MiB · both models on GPU", "good"],
+  ];
+  $("#kpis").innerHTML = k.map(([l, v, d, c]) => `<div class="card kpi"><div class="label">${l}</div><div class="value">${v}</div>
+    <div class="delta ${c}">${c === "good" ? "▲" : "▼"} ${d}</div></div>`).join("");
+  $("#setup").textContent = `Test split: ${R.n_test} tickets, never used for tuning · LLM ${R.config.llm} (Ollama, Q4_K_M) · zero-shot Laya ${R.config.laya_zero_shot}, τ=${R.config.tau_e3} · fine-tuned Laya τ=${R.config.tau_e5} · gate on ${R.config.gate} · RTX 4060 Laptop 8 GB · $0, everything local.`;
+
+  const acc = $("#acc-charts"); acc.innerHTML = "";
+  for (const [key, title, sub] of [["routing_acc", "Routing accuracy", "4 routing nodes, per decision"],
+      ["final_action_acc", "Correct final action", "refund / deny / escalate / reply matches gold"],
+      ["path_exact", "Full path exactly right", "every step equals the gold path"]]) {
+    const c = document.createElement("div"); c.className = "card"; c.innerHTML = `<h3>${title}</h3><div class="small muted">${sub}</div><div></div>`;
+    acc.appendChild(c); hbar(c.lastChild, rowsFor(key, E), {title, fmtv: v => pct(v, 1)}); }
+
+  // latency dot plot (log)
+  { const W = 460, left = 160, right = 70, rowH = 30, top = 6, rows = ORDER.filter(e => E[e]), H = top + rows.length * rowH + 20;
+    const lo = Math.log10(30), hi = Math.log10(10000), x = v => left + (W - left - right) * (Math.log10(v) - lo) / (hi - lo);
+    const svg = el("svg", {viewBox: `0 0 ${W} ${H}`, width: "100%", role: "img", "aria-label": "routing latency"}); const ax = el("g", {class: "axis"}, svg);
+    for (const v of [30, 100, 300, 1000, 3000, 10000]) { el("line", {x1: x(v), x2: x(v), y1: top, y2: H - 18, class: v === 30 ? "baseline" : "gridline"}, ax);
+      const t = el("text", {x: x(v), y: H - 4, "text-anchor": "middle"}, ax); t.textContent = v >= 1000 ? v / 1000 + "k" : v; }
+    rows.forEach((e, i) => { const y = top + i * rowH + 15, p50 = E[e].route_p50_ms, p95 = E[e].route_p95_ms, col = e === HL ? css("--accent") : css("--neutral-strong");
+      const lab = el("text", {x: left - 8, y: y + 4, "text-anchor": "end", class: "lbl"}, svg); lab.textContent = SHORT[e];
+      el("line", {x1: x(p50), x2: x(p95), y1: y, y2: y, stroke: col, "stroke-width": 2, "stroke-linecap": "round"}, svg);
+      el("circle", {cx: x(p50), cy: y, r: 5, fill: col, stroke: css("--surface-1"), "stroke-width": 2}, svg);
+      const t = el("text", {x: x(p95) + 8, y: y + 4, class: "val"}, svg); t.textContent = `${Math.round(p50).toLocaleString()} ms`;
+      const hit = el("rect", {x: 0, y: y - 14, width: W, height: rowH, class: "hit"}, svg);
+      const br = E[e].route_latency_by_router || {};
+      hit.addEventListener("mousemove", ev => showTip(ev, `${e} · ${R.labels[e]}`, [`p50 <b>${Math.round(p50)} ms</b> · p95 <b>${Math.round(p95)} ms</b>`,
+        ...Object.entries(br).map(([k, v]) => `${k}: p50 ${Math.round(v.p50)} ms (n=${v.n})`)]));
+      hit.addEventListener("mouseleave", hideTip); });
+    $("#lat").innerHTML = ""; $("#lat").appendChild(svg); }
+
+  // tokens stacked
+  { const W = 460, left = 160, right = 70, rowH = 30, top = 6, rows = ORDER.filter(e => E[e]), H = top + rows.length * rowH + 20;
+    const max = 2000, x = v => (W - left - right) * v / max; const svg = el("svg", {viewBox: `0 0 ${W} ${H}`, width: "100%", role: "img", "aria-label": "tokens"});
+    const ax = el("g", {class: "axis"}, svg);
+    for (let k2 = 0; k2 <= 4; k2++) { const v = max * k2 / 4; el("line", {x1: left + x(v), x2: left + x(v), y1: top, y2: H - 18, class: k2 ? "gridline" : "baseline"}, ax);
+      const t = el("text", {x: left + x(v), y: H - 4, "text-anchor": "middle"}, ax); t.textContent = v.toLocaleString(); }
+    rows.forEach((e, i) => { const y = top + i * rowH + 5, h = 20, rt = E[e].llm_tokens_routing_per_ticket, nt = E[e].llm_tokens_nodes_per_ticket;
+      const lab = el("text", {x: left - 8, y: y + 14, "text-anchor": "end", class: "lbl"}, svg); lab.textContent = SHORT[e];
+      const wn = x(nt), wr = x(rt);
+      el("rect", {x: left, y, width: Math.max(0, wn - 1), height: h, fill: css("--neutral")}, svg);
+      if (wr > 1) el("path", {d: `M${left + wn + 1},${y} h${Math.max(0, wr - 5)} a4,4 0 0 1 4,4 v${h - 8} a4,4 0 0 1 -4,4 h${-Math.max(0, wr - 5)} z`, fill: css("--routing")}, svg);
+      const t = el("text", {x: left + wn + wr + 6, y: y + 14, class: "val"}, svg); t.textContent = Math.round(rt + nt).toLocaleString();
+      const hit = el("rect", {x: 0, y: y - 4, width: W, height: rowH, class: "hit"}, svg);
+      hit.addEventListener("mousemove", ev => showTip(ev, `${e} · ${R.labels[e]}`, [`routing <b>${Math.round(rt)}</b> tokens`, `in LLM nodes <b>${Math.round(nt)}</b> tokens`]));
+      hit.addEventListener("mouseleave", hideTip); });
+    $("#tok").innerHTML = ""; $("#tok").appendChild(svg); }
+
+  hbar($("#calls"), rowsFor("llm_calls_per_ticket", E), {max: 5, fmtv: v => fmt(v, 2), title: "LLM calls / ticket",
+    tipExtra: r => [`of which routing: ${fmt(E[r.id].llm_calls_routing_per_ticket, 2)}`]});
+  hbar($("#fb"), rowsFor("fallback_rate", E), {max: 0.5, fmtv: v => pct(v, 1), title: "Fallback rate"});
+  hbar($("#e2e"), ORDER.filter(e => E[e]).map(e => ({id: e, label: `${e} · ${R.labels[e]}`, v: E[e].e2e_p50_ms / 1000})),
+    {max: 20, fmtv: v => fmt(v, 1), unit: " s", title: "End-to-end p50", tipExtra: r => [`p95 ${fmt(E[r.id].e2e_p95_ms / 1000, 1)} s`]});
+
+  // per-node heat table (sequential blue)
+  { const nodes = ["classify", "lookup_order", "policy_check", "lookup_order_delivery"]; const ramp = [css("--seq-100"), css("--seq-250"), css("--seq-400"), css("--seq-550"), css("--seq-700")];
+    const colr = v => ramp[Math.max(0, Math.min(4, Math.floor((v - 0.75) / 0.05)))];
+    let h = `<table class="heat"><tr><th>node</th>${ORDER.filter(e => E[e]).map(e => `<th class="num">${e}</th>`).join("")}</tr>`;
+    for (const n of nodes) { h += `<tr><td>${n}</td>` + ORDER.filter(e => E[e]).map(e => { const v = E[e].routing_acc_by_node?.[n];
+      if (v === undefined) return "<td class='cell'>–</td>"; const bg = colr(v), dark = ramp.indexOf(bg) >= 3;
+      return `<td class="cell" style="background:${bg};color:${dark ? "#fff" : "#0b0b0b"}" title="${e} ${n}: ${pct(v, 1)}">${pct(v, 0)}</td>`; }).join("") + "</tr>"; }
+    $("#heat").innerHTML = h + `</table><div class="small muted" style="margin-top:6px">darker = more accurate (75% → 100%)</div>`; }
+
+  // ECE grouped bars (dev): one row per checkpoint×variant, single hue
+  { const rows = []; const add = (name, cand) => { if (!cand) return; for (const [kk, lab] of [["raw_T1", "raw"], ["shipped_T", "shipped T"], ["fitted_T_cv5", "fitted T (CV)"]])
+      rows.push({id: kk === "fitted_T_cv5" && name.startsWith("fine") ? "E5" : "x", label: `${name} · ${lab}`, v: cand[kk].ece_answer_conf, acc: cand[kk].acc}); };
+    add("English", R.dev_zero_shot?.candidates?.english); add("typed", R.dev_zero_shot?.candidates?.typed); add("fine-tuned", R.dev_finetuned?.candidates?.finetuned);
+    hbar($("#ece"), rows, {max: 0.35, fmtv: v => fmt(v, 3), title: "ECE", left: 170, tipExtra: r => [`accuracy ${pct(r.acc, 1)}`]});
+    const tc = R.test_calibration;
+    $("#ece-test").innerHTML = `On <b>test</b>, the decisions Laya kept (confidence ≥ τ) were ${pct(tc.E3.acc)} accurate at ECE ${fmt(tc.E3.ece, 3)} (zero-shot, E3) and
+      ${pct(tc.E5?.acc)} at ECE ${fmt(tc.E5?.ece, 3)} (fine-tuned, E5). Shipped temperatures made calibration worse; temperatures fitted on dev fixed it.`; }
+
+  // failures
+  { let h = "<table><tr><th>experiment</th><th class='num'>wrong / 150</th><th>first wrong decision</th></tr>";
+    for (const e of ORDER.filter(e => R.failures[e])) { const f = R.failures[e];
+      h += `<tr><td>${e} · ${R.labels[e]}</td><td class="num">${f.total}</td><td>${Object.entries(f.by_first_divergence).map(([k2, v]) =>
+        `<span class="chip" title="e.g. ${(f.examples[k2] || []).join(", ")}">${esc(k2)} <b>${v}</b></span>`).join(" ")}</td></tr>`; }
+    $("#fails").innerHTML = h + "</table><div class='small muted' style='margin-top:6px'>hover a chip for example ticket ids · in E5, 9 of 10 failures are the final reply check (Laya rejects a correct reply twice → escalation)</div>"; }
+
+  $("#concl").innerHTML = [
+    `<b>Routing:</b> the System-1/System-2 split holds up once Laya is fine-tuned (E5 ${fmt(e5.routing_acc, 3)} = LLM-only ${fmt(e1.routing_acc, 3)}), at ~${Math.round(e1.route_p50_ms / e5.route_p50_ms)}× lower routing latency.`,
+    `<b>Zero-shot is not enough:</b> E3 routing ${fmt(E.E3.routing_acc, 3)}, correct final action ${pct(E.E3.final_action_acc)}, with ${pct(E.E3.fallback_rate, 0)} of decisions falling back.`,
+    `<b>Weak link:</b> the final reply review. Laya false-rejects faithful replies, and the one-retry-then-escalate rule amplifies it (final action ${pct(e5.final_action_acc)} vs ${pct(e1.final_action_acc)}).`,
+    `<b>Calibration:</b> gate on answer_confidence with temperatures fitted on held-out data; shipped temperatures are worse than none.`,
+    `<b>CPU fallback (E4)</b> keeps accuracy but loses the speed-up (routing p50 ${(E.E4.route_p50_ms / 1000).toFixed(1)} s).`,
+    `<b>Next:</b> move final_review to the LLM or fine-tune it on real drafts; test on tickets written by someone else to measure distribution shift.`,
+  ].map(s => `<li>${s}</li>`).join("");
+
+  // full table
+  const keys = [["routing_acc", "routing accuracy", 3], ["final_action_acc", "final-action accuracy", 3], ["path_exact", "path exact", 3],
+    ["guard_recall_adv", "guard recall", 3], ["guard_fpr_clean", "guard FPR", 3], ["route_p50_ms", "routing p50 ms", 0], ["route_p95_ms", "routing p95 ms", 0],
+    ["e2e_p50_ms", "e2e p50 ms", 0], ["llm_calls_per_ticket", "LLM calls/ticket", 2], ["llm_tokens_per_ticket", "LLM tokens/ticket", 0],
+    ["fallback_rate", "fallback rate", 3], ["review_first_pass_rate", "final_review first pass", 3], ["peak_vram_mib", "peak VRAM MiB", 0]];
+  $("#fulltable").innerHTML = `<table><tr><th>metric</th>${ORDER.filter(e => E[e]).map(e => `<th class="num">${e}</th>`).join("")}</tr>` +
+    keys.map(([kk, lab, d]) => `<tr><td>${lab}</td>${ORDER.filter(e => E[e]).map(e => `<td class="num">${fmt(E[e][kk], d)}</td>`).join("")}</tr>`).join("") + "</table>";
+}
+if (location.hash === "#results") tab("results");
+</script>
+</body>
+</html>
