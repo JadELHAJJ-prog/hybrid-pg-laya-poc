@@ -75,47 +75,82 @@ def version() -> None:
 
 @app.command()
 def run(
-    ticket: str = typer.Option(..., help="ticket id, e.g. T0001"),
+    ticket: str | None = typer.Option(None, help="dataset ticket id, e.g. T0013"),
+    text: str | None = typer.Option(None, help="your own ticket text instead of a dataset ticket"),
+    interactive: bool = typer.Option(False, "--interactive", "-i", help="load models once, then type tickets"),
     router: str = typer.Option("hybrid", help="llm | laya | hybrid"),
+    finetuned: bool = typer.Option(False, help="use the Phase 7 fine-tuned Laya + its dev calibration (E5)"),
     device: str | None = typer.Option(None, help="override laya.device (cuda|cpu)"),
     show_reply: bool = typer.Option(True),
 ) -> None:
-    """Run one ticket and print the path with per-step router and confidence."""
+    """Run tickets through the agent and print each step: which layer decided, confidence, latency."""
     from hpg.tracing import Tracer
 
     cfg = load_cfg()
-    t = next((x for x in load_tickets(cfg) if x["ticket_id"] == ticket), None)
-    if t is None:
-        raise typer.BadParameter(f"unknown ticket {ticket}")
-    eng = build(cfg, router, device)
-    out = ROOT / cfg["paths"]["runs"] / f"single_{router}" / f"{ticket}.jsonl"
-    tracer = Tracer(out)
-    st = eng.run(t, tracer)
-    typer.echo(f"{ticket} [{t['split']}] gold={t['gold_final_action']}\n  {t['text'][:160]}")
-    for r in tracer.records:
-        if r["type"] == "route":
-            ok = ""
-            gold = t["gold_path"]
-            k = len(r["path"])
-            if gold[:k] == r["path"] and k < len(gold):
-                ok = "  OK" if gold[k] == r["target"] else f"  WRONG (gold {gold[k]})"
-            extra = ""
-            if r["router"] == "llm_fallback":
-                extra = f" (laya said {r['laya_target']} @ {r['laya_confidence']:.2f})"
-            typer.echo(
-                f"  {r['node']:>22} -> {r['target']:<22} router={r['router']:<12} "
-                f"conf={r['confidence']:.2f} {r['latency_ms']:.0f}ms{extra}{ok}"
-            )
-        elif r["type"] in ("node", "llm_node") and r.get("executor") in ("llm", "tool"):
-            typer.echo(f"  {r['node']:>22} [{r['executor']}] {r.get('ms', 0):.0f}ms")
-    end = tracer.records[-1]
-    typer.echo(f"  path: {' > '.join(st.path)}")
-    typer.echo(
-        f"  path matches gold: {st.path == t['gold_path']}   ledger: {st.ledger}   error: {end['error']}"
-    )
-    if show_reply and (st.draft_reply or st.info_request):
-        typer.echo(f"  reply: {st.draft_reply or st.info_request}")
-    typer.echo(f"  trace: {out}")
+    if not (ticket or text or interactive):
+        raise typer.BadParameter("give --ticket, --text or --interactive")
+    typer.echo(f"loading router={router}{' (fine-tuned Laya)' if finetuned else ''} ...")
+    eng = build(cfg, router, device, finetuned)
+    tag = f"{router}{'_ft' if finetuned else ''}"
+    by_id = {x["ticket_id"]: x for x in load_tickets(cfg)}
+
+    def one(t: dict) -> None:
+        out = ROOT / cfg["paths"]["runs"] / f"single_{tag}" / f"{t['ticket_id']}.jsonl"
+        tracer = Tracer(out)
+        st = eng.run(t, tracer)
+        gold = t.get("gold_path")
+        head = f"[{t['split']}] gold={t['gold_final_action']}" if gold else "(custom ticket, no gold)"
+        typer.echo(f"\n{t['ticket_id']} {head}\n  ticket: {t['text'][:200]}")
+        for r in tracer.records:
+            if r["type"] == "route" and r["router"] != "deterministic":
+                ok = ""
+                k = len(r["path"])
+                if gold and gold[:k] == r["path"] and k < len(gold):
+                    ok = "  OK" if gold[k] == r["target"] else f"  WRONG (gold {gold[k]})"
+                layer = "System 1 (Laya)" if r["router"] == "laya" else "System 2 (LLM)"
+                extra = ""
+                if r["router"] == "llm_fallback":
+                    extra = f"  <- fallback: Laya said {r['laya_target']} @ {r['laya_confidence']:.2f}"
+                conf = r.get("answer_confidence") or r["confidence"]
+                typer.echo(f"  {r['node']:>22} -> {r['target']:<22} {layer:<16} conf={conf:.2f} "
+                           f"{r['latency_ms']:>5.0f}ms{extra}{ok}")  # fmt: skip
+            elif r["type"] == "llm_node":
+                toks = r["llm_prompt_tokens"] + r["llm_completion_tokens"]
+                typer.echo(f"  {r['node']:>22}    [LLM node] {r['llm_calls']} call(s), {toks} tokens, {r['ms']:.0f}ms")
+            elif r["type"] == "node" and r.get("executor") == "tool":
+                typer.echo(f"  {r['node']:>22}    [tool {r['tool']}] {json.dumps(r.get('output'), default=str)[:90]}")
+        end = tracer.records[-1]
+        typer.echo(f"  path: {' > '.join(st.path)}")
+        if gold:
+            typer.echo(f"  matches gold: {st.path == gold}")
+        typer.echo(f"  actions: {st.ledger or 'none'}   total {end['wall_ms'] / 1000:.1f}s   error: {end['error']}")
+        if show_reply and (st.draft_reply or st.info_request):
+            typer.echo(f"  reply: {st.draft_reply or st.info_request}")
+        typer.echo(f"  trace: {out}")
+
+    n = 0
+
+    def custom(s: str) -> dict:
+        nonlocal n
+        n += 1
+        return {"ticket_id": f"C{int(time.time())}_{n}", "text": s, "split": "custom"}
+
+    if ticket:
+        if ticket not in by_id:
+            raise typer.BadParameter(f"unknown ticket {ticket}")
+        one(by_id[ticket])
+    if text:
+        one(custom(text))
+    if interactive:
+        typer.echo("\nType a customer ticket (or a ticket id like T0013). Empty line or 'q' quits.")
+        while True:
+            try:
+                s = input("\nticket> ").strip()
+            except EOFError:
+                break
+            if s in ("", "q", "quit", "exit"):
+                break
+            one(by_id[s] if s in by_id else custom(s))
 
 
 def run_experiment(cfg: dict, exp: str, split: str, limit: int | None = None, resume: bool = True) -> Path:
@@ -163,7 +198,7 @@ def run_experiment(cfg: dict, exp: str, split: str, limit: int | None = None, re
 def eval_cmd(
     exp: list[str] = typer.Option(None, help="experiment ids (E1..E5); repeatable"),
     split: str = typer.Option("test"),
-    all_: bool = typer.Option(False, "--all", help="run E1-E4 (+E5 if the fine-tuned checkpoint exists) on test, then write the report"),
+    all_: bool = typer.Option(False, "--all", help="run E1-E4 (+E5 if fine-tuned exists) on test, then report"),
     limit: int | None = typer.Option(None),
     fresh: bool = typer.Option(False, help="delete existing traces first"),
 ) -> None:

@@ -23,6 +23,8 @@ uv run python scripts/vram_probe.py                      # both models on an 8 G
 uv run pytest -q                                         # unit + engine integration tests (no models needed)
 uv run python scripts/validate_dataset.py                # gold paths valid, >= 8 gold examples per edge
 uv run hpg run --ticket T0013 --router hybrid            # one ticket, per-step router + confidence
+uv run hpg run --finetuned -i                           # interactive: type tickets, hybrid + fine-tuned Laya (E5)
+uv run hpg run --finetuned --text "charged twice for ORD-10033"   # one custom ticket
 uv run hpg calibrate --split dev                         # Phase 5: temperatures, checkpoint, gate, tau (dev only)
 uv run hpg eval --all                                    # Phase 6: E1-E4 on test + reports/results_test.md
 ```
