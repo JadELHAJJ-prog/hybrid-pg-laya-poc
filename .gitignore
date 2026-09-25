@@ -9,3 +9,4 @@ runs/*
 .claude/settings.local.json
 graphify-out/cache/
 models/
+graphify-out/
