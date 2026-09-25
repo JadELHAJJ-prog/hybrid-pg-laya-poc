@@ -22,13 +22,14 @@ llm:
 
 laya:
   repo: convaiinnovations/laya
-  subfolder: typed-decisions   # "" = English root checkpoint; chosen in Phase 5
+  subfolder: ""   # chosen on dev in Phase 5
   device: cuda                 # cuda | cpu (fallback a)
-  temperature: 1.0             # fitted on dev in Phase 5
-  max_tokens: 1024
   bf16_weights: true           # store weights in bf16 on CUDA (see laya_router.load_agent)
+  guard_mode: choice   # choice | preset, chosen on dev (Phase 5)
+  post_temperatures: {3: 0.575, 4: 0.742, 5: 0.783}   # per option count, fitted on dev (Phase 5)
   finetuned: models/laya_refunddesk   # Phase 7: unzip the Kaggle output here (gitignored)
 
 routing:
-  tau: 0.5                     # tuned on dev in Phase 5
+  tau: 0.87   # chosen on dev in Phase 5 (reports/calibration_dev.json)
+  gate: answer_confidence
   max_steps: 20

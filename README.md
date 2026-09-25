@@ -1,1 +1,48 @@
-# Hybrid PG PoC (RefundDesk)
+# Hybrid System-1 / System-2 agent on a Procedural Graph (RefundDesk PoC)
+
+This PoC routes a customer-support agent through an explicit **Procedural Graph** (`graphs/refunddesk_v1.yaml`):
+
+- **System 1 – [Laya](https://github.com/NandhaKishorM/laya)**, a non-autoregressive typed-decision encoder, picks edges and runs the guard and the final reply review in a single forward pass.
+- **System 2 – a local Qwen3.5-9B** (Ollama, Q4_K_M, text-only) is called only inside nodes that need generation or tool use, and as a fallback router when Laya's confidence is below `tau`.
+
+Everything runs locally for $0. The spec is `POC PLAN_5282.md`, and all measured results are in `RESULTS.md`.
+
+## Setup
+
+```bash
+uv sync                                                  # Python 3.11 env (.venv)
+ollama pull hf.co/unsloth/Qwen3.5-9B-GGUF:Q4_K_M         # then build the text-only model:
+#   edit FROM in ollama/Modelfile.qwen3.5-9b-text to the pulled model blob (ollama show --modelfile ...)
+ollama create qwen3.5-9b-text -f ollama/Modelfile.qwen3.5-9b-text
+uv run python scripts/vram_probe.py                      # both models on an 8 GB GPU?
+```
+
+## Usage
+
+```bash
+uv run pytest -q                                         # unit + engine integration tests (no models needed)
+uv run python scripts/validate_dataset.py                # gold paths valid, >= 8 gold examples per edge
+uv run hpg run --ticket T0013 --router hybrid            # one ticket, per-step router + confidence
+uv run hpg calibrate --split dev                         # Phase 5: temperatures, checkpoint, gate, tau (dev only)
+uv run hpg eval --all                                    # Phase 6: E1-E4 on test + reports/results_test.md
+```
+
+Traces are written to `runs/<experiment>/<ticket_id>.jsonl`, one JSON line per step. Each step records the node, the router that decided it (`deterministic | laya | llm | llm_fallback`), probabilities, confidence, latency, and LLM tokens. Metrics are computed from these traces only.
+
+## Layout
+
+| path | what |
+| --- | --- |
+| `graphs/refunddesk_v1.yaml` | the Procedural Graph: nodes, and edges with condition / guidance / pitfalls |
+| `data/` | mock world (orders, KB, service status), 220 tickets (dev 70 / test 150), fine-tune data |
+| `src/hpg/engine.py` | graph walker (max-steps guard, bounded retry edge) |
+| `src/hpg/routers/` | `LLMRouter`, `LayaRouter`, `HybridRouter` behind one interface |
+| `src/hpg/llm_nodes.py` | LLM nodes with PG guidance injection; tool loop for technical tickets |
+| `src/hpg/eval/` | trace metrics, calibration (Phase 5), reports |
+| `scripts/` | world / ticket / fine-tune data generators, dataset validator, VRAM probe |
+| `notebooks/refunddesk_finetune_2xT4_kaggle.ipynb` | Phase 7 fine-tune on free Kaggle 2×T4 |
+| `.claude/` | Claude Code agents, skills, and hooks used to build this repo |
+
+## Follow-ups (not used here)
+
+Laya ships a LangGraph integration (`laya.integrations.langchain.LayaRouter`). The core engine deliberately avoids agent frameworks so the System-1/System-2 handoff stays explicit and inspectable. Porting the graph to LangGraph conditional edges would be a natural next step.

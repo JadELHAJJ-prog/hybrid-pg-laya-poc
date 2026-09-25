@@ -104,3 +104,43 @@ final_review, matching "LLMRouter everywhere". When the LLM answers `Z`, it take
 confidence 0.
 **Open issues:** the first Laya CUDA call costs 1.7–2.6 s, so a warm-up was added.
 
+## Phase 5 – Calibration and threshold tuning, dev only (DONE 2026-09-25)
+**Method** (`uv run hpg calibrate --split dev`; `--split test` is refused):
+1. Collect: walk all 70 dev tickets along their gold path with the real LLM nodes. At every multi-way decision,
+   record the LLMRouter answer plus a snapshot of the exact routing input: 264 decisions over guard, classify,
+   lookup_order, policy_check, lookup_order_delivery and final_review.
+2. Replay each snapshot through both Laya checkpoints with the choice temperatures neutralised (T=1) to get raw
+   probabilities.
+3. Fit one temperature per exact option count (3, 4 or 5 options including `Z`) by NLL. The ECE for the fitted
+   temperatures comes from 5-fold CV grouped by ticket, so the fitting and evaluation data are disjoint. Simulate
+   hybrid accuracy vs tau from these CV-calibrated probabilities (Laya if score ≥ tau and not `Z`, else the
+   recorded LLM decision). Pick the smallest tau with hybrid accuracy ≥ LLM − 2 pts.
+**Key numbers** (`reports/calibration_dev.json`, `reports/reliability_dev.png`, `reports/tau_sweep_dev.png`):
+| dev, 264 decisions | typed-decisions | English root |
+|---|---|---|
+| Laya accuracy (routing semantics) | 0.814 | **0.867** |
+| ECE answer_confidence: raw T=1 / shipped T / fitted T (CV) | 0.210 / 0.326 / 0.074 | 0.137 / 0.285 / **0.044** |
+| fitted T per option count {3,4,5} | 0.65 / 0.40 / 0.38 | 0.57 / 0.74 / 0.78 |
+| chosen tau, answer_confidence gate → sim. hybrid acc / Laya coverage | 0.89 → 0.970 / 34.8% | **0.87 → 0.970 / 56.4%** |
+| chosen tau, entropy `confidence` gate → sim. hybrid acc / coverage | 0.68 → 0.970 / 33.0% | 0.67 → 0.970 / 51.9% |
+| LLMRouter accuracy, same decisions | 0.989 | 0.989 |
+Per-node accuracy, Laya-English vs LLM: guard 0.96/0.97, classify 0.88/0.98, lookup_order 0.97/1.00, policy_check
+0.67/1.00, lookup_order_delivery 0.62/1.00, final_review 0.85/1.00.
+Guard on the 70 dev guard decisions (5 adversarial): `guard_questions()` preset (jailbreak/prompt_injection noul
+≥ 0.5 or harm_severity ≥ 1.5) recall 0.80 / FPR 0.34; Laya 2-option choice recall 0.20 / FPR 0.00; LLM recall
+1.00 / FPR 0.03.
+**Decision written to config.yaml:** checkpoint = English root (`subfolder: ""`), gate = `answer_confidence`,
+tau = 0.87, post-hoc temperatures {3: 0.575, 4: 0.742, 5: 0.783}, guard_mode = choice (the preset flags a third of
+clean dev tickets, and the tau sweep was simulated with the choice guard).
+**Findings:** (a) Both checkpoints are *under*-confident on these decisions, so the fitted T < 1 sharpens them. The
+shipped temperatures (T ≈ 1.76 for 3–5 options) make calibration worse. (b) Zero-shot, the English root beats the
+fine-tuned typed-decisions checkpoint here, mostly on final_review (0.85 vs 0.54). (c) Laya is weakest on nodes that
+need reading facts (policy_check, lookup_order_delivery). (d) Even at the chosen tau, ~44% of decisions fall back to
+the LLM on dev.
+**Deviations from plan:** gate on `answer_confidence` rather than entropy `confidence` (chosen on dev, higher
+coverage at equal accuracy; the library's source documents it as the calibrated quantity). Temperatures are applied
+post-hoc per exact option count because Laya's own bucket (3-5) is shared by all our nodes. The dev accuracy for
+tau selection is teacher-forced (the gold prefix), not end-to-end.
+**Open issues:** the English checkpoint's 512-token context leaves ~316 tokens for the state, so long tickets are
+truncated head+tail.
+

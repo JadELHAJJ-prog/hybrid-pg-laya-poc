@@ -122,6 +122,16 @@ def calibration_report(cfg: dict, root: Path, split: str = "dev", write_config: 
         "post_temperatures": b["fitted_T_cv5"]["T_all_dev"],
         "within_2pts": choice["hybrid_acc"] >= b["llm_acc_teacher_forced"] - 0.02,
     }
+    gd = summary.get("guard_dev")
+    if gd:
+        def j(m):  # Youden's J on dev: recall on adversarial minus false-positive rate on clean
+            return (m["recall_adv"] or 0.0) - m["fpr_clean"]
+
+        # The tau sweep above simulates the choice-mode guard, so only switch to the preset if it is clearly better
+        # AND does not flag many more clean tickets (each false flag escalates a normal customer).
+        better = j(gd["preset"]) > j(gd["choice_laya"])
+        safe = gd["preset"]["fpr_clean"] <= gd["choice_laya"]["fpr_clean"] + 0.05
+        summary["decision"]["guard_mode"] = "preset" if (better and safe) else "choice"
     slim = json.loads(json.dumps(summary, default=float))
     for c in slim["candidates"].values():
         for gname in c["gates"]:
@@ -148,6 +158,12 @@ def _write_config(path: Path, d: dict) -> None:
         s = re.sub(r"(?m)^  post_temperatures: .*$", line, s)
     else:
         s = re.sub(r"(?m)^(  bf16_weights: .*)$", rf"\1\n{line}", s)
+    if "guard_mode" in d:
+        gm = f"  guard_mode: {d['guard_mode']}   # choice | preset, chosen on dev (Phase 5)"
+        if re.search(r"(?m)^  guard_mode: ", s):
+            s = re.sub(r"(?m)^  guard_mode: .*$", gm, s)
+        else:
+            s = re.sub(r"(?m)^(  bf16_weights: .*)$", rf"\1\n{gm}", s)
     path.write_text(s)
 
 
