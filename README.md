@@ -17,6 +17,19 @@ ollama create qwen3.5-9b-text -f ollama/Modelfile.qwen3.5-9b-text
 uv run python scripts/vram_probe.py                      # both models on an 8 GB GPU?
 ```
 
+### Fine-tuned Laya checkpoint (not included)
+
+The fine-tuned checkpoint (`models/laya_refunddesk/`, 808 MB) is too large for git and is not in this repo. You need it only for E5, `hpg run --finetuned`, and the web UI's default chat mode ("Hybrid · fine-tuned Laya"). Everything else runs without it, and the stock Laya checkpoints download automatically on first use.
+
+To recreate it (free, about 10 minutes of training):
+
+1. `uv run python scripts/make_finetune_data.py` writes `data/finetune/refunddesk_routing_train.jsonl` (already committed, so this step is optional).
+2. On [Kaggle](https://www.kaggle.com/), upload that file as a dataset, open `notebooks/refunddesk_finetune_2xT4_kaggle.ipynb`, attach the dataset, set the accelerator to **GPU T4 x2**, and run all cells.
+3. Download `/kaggle/working/laya_refunddesk.zip` and unzip it so that `models/laya_refunddesk/model.safetensors` exists.
+4. Calibrate it on dev: `uv run hpg calibrate --stage finetuned --device cpu`. This writes the `finetuned_calibration` block in `config.yaml`; the committed values are the ones used for the reported E5 results.
+
+Your checkpoint will differ slightly from ours (training is stochastic), so E5 numbers may not match `RESULTS.md` exactly.
+
 ## Usage
 
 ```bash
