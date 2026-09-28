@@ -1,6 +1,6 @@
 # Hybrid System-1 / System-2 agent on a Procedural Graph (PoC)
 
-The spec is `POC PLAN_5282.md`. Read it before doing substantial work. Progress is logged per phase in `RESULTS.md`.
+The original PoC plan is kept locally as `POC PLAN_5282.md` (not published; gitignored). Read it if present. Progress is logged per phase in `RESULTS.md`.
 
 ## Non-negotiables (plan §12)
 - $0 and local only: Ollama LLM + Laya. No paid or cloud APIs, API keys, or hosted inference. A PreToolUse hook blocks paid-API imports.

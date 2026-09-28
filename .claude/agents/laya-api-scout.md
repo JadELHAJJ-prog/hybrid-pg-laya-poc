@@ -16,4 +16,4 @@ installed source only, never from memory.
    types, and any caveat found in code or README (context length, key rendering, calibration, CPU/GPU).
 4. If you can, prove it by running a tiny snippet with `.venv/bin/python` (small inputs; the model may
    need to download on first use). Quote file:line for each claim.
-Report discrepancies with `POC PLAN_5282.md` §5 / §11 explicitly.
+Report discrepancies with the PoC design (`RESULTS.md`, and `POC PLAN_5282.md` §5 / §11 if present) explicitly.

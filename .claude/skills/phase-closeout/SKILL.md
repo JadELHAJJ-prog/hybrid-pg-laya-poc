@@ -7,7 +7,7 @@ description: Use when finishing any phase (0-8) of the Hybrid PG PoC, before tel
 
 A phase is not done until every step below has evidence.
 
-1. **Acceptance criteria**: re-read the phase's "Done when" in `POC PLAN_5282.md` §10. Run each check and keep the output.
+1. **Acceptance criteria**: re-read the phase's "Done when" in the local PoC plan (`POC PLAN_5282.md`, if present) §10. Run each check and keep the output.
 2. **Tests**: `uv run pytest -q` must pass. Run `uv run ruff check src tests scripts` as well.
 3. **Audit**: dispatch the `phase-auditor` agent with the phase number. Fix any blocking issues it finds, then re-run it.
 4. **RESULTS.md**: append a section with exactly this header shape (the SessionStart hook greps for it):

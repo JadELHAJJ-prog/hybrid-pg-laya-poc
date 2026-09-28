@@ -5,7 +5,7 @@ This PoC routes a customer-support agent through an explicit **Procedural Graph*
 - **System 1 – [Laya](https://github.com/NandhaKishorM/laya)**, a non-autoregressive typed-decision encoder, picks edges and runs the guard and the final reply review in a single forward pass.
 - **System 2 – a local Qwen3.5-9B** (Ollama, Q4_K_M, text-only) is called only inside nodes that need generation or tool use, and as a fallback router when Laya's confidence is below `tau`.
 
-Everything runs locally for $0. The spec is `POC PLAN_5282.md`, and all measured results are in `RESULTS.md`.
+Everything runs locally for $0. All measured results, per phase and with every deviation from the original plan, are in `RESULTS.md`.
 
 ## Setup
 
